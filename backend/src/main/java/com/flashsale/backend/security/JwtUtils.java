@@ -69,15 +69,15 @@ public class JwtUtils {
      */
     public ResponseCookie generateAccessResponseCookie(String jwt) {
         return ResponseCookie.from("access_token", jwt).path("/").httpOnly(true)
-                .secure(false)      // Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
-                .sameSite("Lax")    // 允許一般跨站點連結攜帶，兼顧體驗與安全
+                .secure(false)// Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
+                .sameSite("Lax")    
                 .maxAge(accessExpirationMs / 1000).build();
     }
 
     public ResponseCookie generateRefreshResponseCookie(String jwt) {
         return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh").httpOnly(true)
-                .secure(false)
-                .sameSite("Strict") //Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
+                .secure(false)//Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
+                .sameSite("Strict") 
                 .maxAge(refreshExpirationMs / 1000).build();
     }
 
