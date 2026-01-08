@@ -69,23 +69,24 @@ public class JwtUtils {
      */
     public ResponseCookie generateAccessResponseCookie(String jwt) {
         return ResponseCookie.from("access_token", jwt).path("/").httpOnly(true)
-                .secure(false)      // localhost 開發設 false，正式環境 HTTPS 務必設 true
+                .secure(false)      // Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
                 .sameSite("Lax")    // 允許一般跨站點連結攜帶，兼顧體驗與安全
                 .maxAge(accessExpirationMs / 1000).build();
     }
 
     public ResponseCookie generateRefreshResponseCookie(String jwt) {
-        return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh") // 金卡隔離：只有換票請求才會攜帶
-                .httpOnly(true).secure(false).sameSite("Strict") // 最高安全性：禁止任何跨站點請求攜帶
+        return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh").httpOnly(true)
+                .secure(false)
+                .sameSite("Strict") //Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
                 .maxAge(refreshExpirationMs / 1000).build();
     }
 
     public ResponseCookie getCleanAccessCookie() {
-        return ResponseCookie.from("access_token", null).path("/").maxAge(0).build();
+        return ResponseCookie.from("access_token", "").path("/").maxAge(0).build();
     }
 
     public ResponseCookie getCleanRefreshCookie() {
-        return ResponseCookie.from("refresh_token", null).path("/auth/refresh").maxAge(0).build();
+        return ResponseCookie.from("refresh_token", "").path("/auth/refresh").maxAge(0).build();
     }
 
     /**
