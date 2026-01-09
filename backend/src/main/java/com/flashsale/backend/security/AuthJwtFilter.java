@@ -1,6 +1,12 @@
 package com.flashsale.backend.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flashsale.backend.common.ApiResponse;
+import com.flashsale.backend.common.ResultCode;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,27 +41,50 @@ public class AuthJwtFilter extends OncePerRequestFilter {
         try {
             String jwt = jwtUtils.getJwtFromCookies(request, "access_token");
 
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-
-                Claims claims = jwtUtils.getClaimsFromToken(jwt);
-                String username = claims.getSubject();
-                String memberId = claims.get("id", String.class);
-                String role = claims.get("role", String.class);
-
-                //create for spring security rules
-                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username,
-                        null, authorities);
-
-                //this can help to get id for each restful api
-                authentication.setDetails(memberId);
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (jwt == null) {
+                log.debug("Missing access_token cookie for URI: {}", request.getRequestURI());
+                handleError(response, ResultCode.TOKEN_MISSING);
+                return;
             }
+
+            jwtUtils.validateJwtToken(jwt);
+            Claims claims = jwtUtils.getClaimsFromToken(jwt);
+            String username = claims.getSubject();
+            String memberId = claims.get("id", String.class);
+            String role = claims.get("role", String.class);
+            log.info("User '{}' (ID: {}) authenticated successfully for {}", username, memberId, request.getRequestURI());
+
+            //create for spring security rules
+            List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
+                    authorities);
+            //this can help to get id for each restful api
+            authentication.setDetails(memberId);
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } catch (ExpiredJwtException e) {
+            log.info("JWT token expired [URI: {}]: {}", request.getRequestURI(), e.getMessage());
+            handleError(response, ResultCode.TOKEN_EXPIRED);
+            return;
+        } catch (SignatureException | MalformedJwtException e) {
+            log.warn("Invalid JWT signature/format attempt [IP: {}]: {}", request.getRemoteAddr(), e.getMessage());
+            handleError(response, ResultCode.TOKEN_INVALID);
+            return;
         } catch (Exception e) {
-            log.error("Cannot set user authentication: {}", e.getMessage());
+            log.error("Unexpected System Error in AuthFilter [URI: {}]: ", request.getRequestURI(), e);
+            handleError(response, ResultCode.SYSTEM_ERROR);
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void handleError(HttpServletResponse response, ResultCode rc) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        ApiResponse<Object> apiRes = ApiResponse.of(rc);
+        String json = new ObjectMapper().writeValueAsString(apiRes);
+        response.getWriter().write(json);
     }
 }

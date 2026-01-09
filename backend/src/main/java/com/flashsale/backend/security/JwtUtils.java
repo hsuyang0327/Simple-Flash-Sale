@@ -70,14 +70,14 @@ public class JwtUtils {
     public ResponseCookie generateAccessResponseCookie(String jwt) {
         return ResponseCookie.from("access_token", jwt).path("/").httpOnly(true)
                 .secure(false)// Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
-                .sameSite("Lax")    
+                .sameSite("Lax")
                 .maxAge(accessExpirationMs / 1000).build();
     }
 
     public ResponseCookie generateRefreshResponseCookie(String jwt) {
         return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh").httpOnly(true)
                 .secure(false)//Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
-                .sameSite("Strict") 
+                .sameSite("Strict")
                 .maxAge(refreshExpirationMs / 1000).build();
     }
 
@@ -99,20 +99,11 @@ public class JwtUtils {
         return (cookie != null) ? cookie.getValue() : null;
     }
 
-    public boolean validateJwtToken(String authToken) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
-            return true;
-        } catch (ExpiredJwtException e) {
-            log.error("JWT token is expired: {}", e.getMessage());
-        } catch (SignatureException e) {
-            log.error("Invalid JWT signature: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            log.error("Invalid JWT token format: {}", e.getMessage());
-        } catch (Exception e) {
-            log.error("JWT validation error: {}", e.getMessage());
-        }
-        return false;
+    public void validateJwtToken(String authToken) throws ExpiredJwtException, SignatureException, MalformedJwtException, UnsupportedJwtException, IllegalArgumentException {
+        Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(authToken);
     }
 
     public Claims getClaimsFromToken(String token) {
