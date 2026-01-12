@@ -42,37 +42,30 @@ public class AuthJwtFilter extends OncePerRequestFilter {
             String jwt = jwtUtils.getJwtFromCookies(request, "access_token");
 
             if (jwt == null) {
-                log.debug("Missing access_token cookie for URI: {}", request.getRequestURI());
-                handleError(response, ResultCode.TOKEN_MISSING);
+                filterChain.doFilter(request, response);
                 return;
             }
-
             jwtUtils.validateJwtToken(jwt);
             Claims claims = jwtUtils.getClaimsFromToken(jwt);
             String username = claims.getSubject();
             String memberId = claims.get("id", String.class);
             String role = claims.get("role", String.class);
-            log.info("User '{}' (ID: {}) authenticated successfully for {}", username, memberId, request.getRequestURI());
 
-            //create for spring security rules
             List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
-                    authorities);
-            //this can help to get id for each restful api
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    username, null, authorities);
             authentication.setDetails(memberId);
-
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
         } catch (ExpiredJwtException e) {
-            log.info("JWT token expired [URI: {}]: {}", request.getRequestURI(), e.getMessage());
-            handleError(response, ResultCode.TOKEN_EXPIRED);
+            log.info("Access token expired for URI: {}", request.getRequestURI());
+            handleError(response, ResultCode.ACCESS_TOKEN_EXPIRED);
             return;
         } catch (SignatureException | MalformedJwtException e) {
-            log.warn("Invalid JWT signature/format attempt [IP: {}]: {}", request.getRemoteAddr(), e.getMessage());
+            log.warn("Invalid JWT signature attempt from IP: {}", request.getRemoteAddr());
             handleError(response, ResultCode.TOKEN_INVALID);
             return;
         } catch (Exception e) {
-            log.error("Unexpected System Error in AuthFilter [URI: {}]: ", request.getRequestURI(), e);
+            log.error("Internal Auth Error: ", e);
             handleError(response, ResultCode.SYSTEM_ERROR);
             return;
         }

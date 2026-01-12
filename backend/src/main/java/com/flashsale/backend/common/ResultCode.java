@@ -13,8 +13,9 @@ public enum ResultCode {
 
     // JWT
     TOKEN_INVALID(4001, "invalid_token"),
-    TOKEN_EXPIRED(4002, "expired_token"),
-    TOKEN_MISSING(4003, "missing_token"),
+    ACCESS_TOKEN_EXPIRED(4002, "access_token_expired"),
+    REFRESH_TOKEN_EXPIRED(4003, "refresh_token_expired"),
+    TOKEN_MISSING(4004, "missing_token"),
 
     //Member
     MEMBER_NOT_FOUND(4101, "member_not_found"),
