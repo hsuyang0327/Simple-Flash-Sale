@@ -86,7 +86,7 @@ public class JwtUtils {
     }
 
     public ResponseCookie getCleanRefreshCookie() {
-        return ResponseCookie.from("refresh_token", "").path("/auth/refresh").maxAge(0).build();
+        return ResponseCookie.from("refresh_token", "").path("/api/auth/refresh").maxAge(0).build();
     }
 
     /**
