@@ -1,7 +1,7 @@
 package com.flashsale.backend.service;
 
 import com.flashsale.backend.common.ResultCode;
-import com.flashsale.backend.dto.JwtResponse;
+import com.flashsale.backend.dto.response.JwtResponse;
 import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.MemberRepository;
@@ -61,7 +61,7 @@ public class AuthService {
      */
     public JwtResponse refresh(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
-            throw new BusinessException(ResultCode.TOKEN_MISSING);
+            throw new BusinessException(ResultCode.REFRESH_TOKEN_EXPIRED);
         }
 
         Claims claims;

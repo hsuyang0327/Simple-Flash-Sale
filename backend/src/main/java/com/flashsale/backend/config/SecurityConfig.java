@@ -1,9 +1,14 @@
 package com.flashsale.backend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flashsale.backend.common.ApiResponse;
+import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.security.AuthJwtFilter;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,19 +30,32 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfig {
 
     private final AuthJwtFilter authJwtFilter;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfig(AuthJwtFilter authJwtFilter) {
+    public SecurityConfig(AuthJwtFilter authJwtFilter, ObjectMapper objectMapper) {
         this.authJwtFilter = authJwtFilter;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            log.warn("Unauthorized request intercepted: {}, Error: {}", request.getRequestURI(), authException.getMessage());
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+                            response.setContentType("application/json;charset=UTF-8");
+                            ApiResponse<Object> apiRes = ApiResponse.of(ResultCode.TOKEN_MISSING);
+                            String json = objectMapper.writeValueAsString(apiRes);
+                            response.getWriter().write(json);
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()

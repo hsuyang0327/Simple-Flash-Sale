@@ -2,10 +2,12 @@ package com.flashsale.backend.controller;
 
 import com.flashsale.backend.common.ApiResponse;
 import com.flashsale.backend.common.ResultCode;
-import com.flashsale.backend.dto.JwtResponse;
+import com.flashsale.backend.dto.request.LoginRequest;
+import com.flashsale.backend.dto.response.JwtResponse;
 import com.flashsale.backend.security.JwtUtils;
 import com.flashsale.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -33,14 +35,14 @@ public class AuthController {
      * @date 2026/1/12 上午 11:05
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest req) {
 
-        JwtResponse jwtResponse = authService.login(email, password);
+        JwtResponse jwtResponse = authService.login(req.getEmail(), req.getPassword());
 
         ResponseCookie accessCookie = jwtUtils.generateAccessResponseCookie(jwtResponse.getAccessToken());
         ResponseCookie refreshCookie = jwtUtils.generateRefreshResponseCookie(jwtResponse.getRefreshToken());
 
-        log.info("User {} logged in successfully, cookies generated.", email);
+        log.info("User {} logged in successfully, cookies generated.", req.getEmail());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())

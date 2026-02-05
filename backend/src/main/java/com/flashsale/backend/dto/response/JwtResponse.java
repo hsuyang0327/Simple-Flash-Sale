@@ -1,4 +1,4 @@
-package com.flashsale.backend.dto;
+package com.flashsale.backend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

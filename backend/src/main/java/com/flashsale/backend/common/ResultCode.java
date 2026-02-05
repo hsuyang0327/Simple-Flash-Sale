@@ -23,6 +23,10 @@ public enum ResultCode {
     LOGIN_FAILED(4103, "login_failed_invalid_credentials"),
     MEMBER_STATUS_LOCKED(4104, "member_account_locked"),
 
+    // Validation
+    EMAIL_EMPTY(4201, "email_is_required"),
+    INVALID_EMAIL(4202, "invalid_email_format"),
+    PASSWORD_EMPTY(4203, "password_is_required"),
 
     SYSTEM_ERROR(5000, "server_error");
 

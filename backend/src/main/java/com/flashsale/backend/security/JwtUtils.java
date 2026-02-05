@@ -26,7 +26,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${flashsale.jwt.secret:your-super-secret-key-at-least-32-chars-long}")
+    @Value("${flashsale.jwt.secret}")
     private String jwtSecret;
 
     @Value("${flashsale.jwt.accessExpirationMs:900000}") //15 min
@@ -34,6 +34,9 @@ public class JwtUtils {
 
     @Value("${flashsale.jwt.refreshExpirationMs:3600000}") // 1 hour
     private long refreshExpirationMs;
+
+    @Value("${flashsale.jwt.cookieSecure:false}") // Default false for dev, set true in prod
+    private boolean cookieSecure;
 
     private SecretKey key;
 
@@ -69,14 +72,14 @@ public class JwtUtils {
      */
     public ResponseCookie generateAccessResponseCookie(String jwt) {
         return ResponseCookie.from("access_token", jwt).path("/").httpOnly(true)
-                .secure(false)// Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
+                .secure(cookieSecure)
                 .sameSite("Lax")
-                .maxAge(accessExpirationMs / 1000).build();
+                .build();
     }
 
     public ResponseCookie generateRefreshResponseCookie(String jwt) {
         return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh").httpOnly(true)
-                .secure(false)//Set to false for localhost (HTTP); must be true for production (HTTPS) to ensure security.
+                .secure(cookieSecure)
                 .sameSite("Strict")
                 .maxAge(refreshExpirationMs / 1000).build();
     }
