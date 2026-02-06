@@ -27,6 +27,9 @@ public enum ResultCode {
     EMAIL_EMPTY(4201, "email_is_required"),
     INVALID_EMAIL(4202, "invalid_email_format"),
     PASSWORD_EMPTY(4203, "password_is_required"),
+    NAME_EMPTY(4204, "name_is_required"),
+
+    // System
 
     SYSTEM_ERROR(5000, "server_error");
 
