@@ -78,7 +78,7 @@ public class JwtUtils {
     }
 
     public ResponseCookie generateRefreshResponseCookie(String jwt) {
-        return ResponseCookie.from("refresh_token", jwt).path("/api/auth/refresh").httpOnly(true)
+        return ResponseCookie.from("refresh_token", jwt).path("/api/client/auth/refresh").httpOnly(true)
                 .secure(cookieSecure)
                 .sameSite("Strict")
                 .maxAge(refreshExpirationMs / 1000).build();
@@ -89,7 +89,7 @@ public class JwtUtils {
     }
 
     public ResponseCookie getCleanRefreshCookie() {
-        return ResponseCookie.from("refresh_token", "").path("/api/auth/refresh").maxAge(0).build();
+        return ResponseCookie.from("refresh_token", "").path("/api/client/auth/refresh").maxAge(0).build();
     }
 
     /**

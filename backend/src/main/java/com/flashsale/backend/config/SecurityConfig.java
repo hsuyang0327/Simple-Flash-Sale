@@ -57,7 +57,9 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/client/auth/**").permitAll()
+                        .requestMatchers("/api/client/open/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll()
                         .anyRequest().authenticated()
                 );
         //cors : Allow cross-origin requests from specific sites
