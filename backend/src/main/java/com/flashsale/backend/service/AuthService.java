@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @author Yang-Hsu
  * @description Service for Certification
+ * @author Yang-Hsu
  * @date 2026/1/12 上午 10:50
  */
 @Slf4j

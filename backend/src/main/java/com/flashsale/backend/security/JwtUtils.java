@@ -18,8 +18,8 @@ import java.util.Date;
 
 
 /**
- * @author Yang-Hsu
  * @description Tool for JWT
+ * @author Yang-Hsu
  * @date 2026/1/8 下午 03:47
  */
 @Slf4j
