@@ -6,6 +6,8 @@ import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,7 @@ public class MemberService {
      * @date 2026/1/9 下午 01:54
      */
     @Transactional
-    public Member register(Member member) {
+    public Member addMember(Member member) {
         if (memberRepository.existsByMemberEmail(member.getMemberEmail())) {
             log.warn("Registration failed: memberEmail {} already exists", member.getMemberEmail());
             throw new BusinessException(ResultCode.MEMBER_ALREADY_EXISTS);
@@ -60,11 +62,11 @@ public class MemberService {
      */
     @Transactional
     public Member updateMember(String memberId, Member updatedData) {
-        Member existingMember = this.getMemberById(memberId); //method already declare
-        if (updatedData.getMemberName() != null) {
+        Member existingMember = this.getMemberById(memberId);
+        if (updatedData.getMemberName() != null && !updatedData.getMemberName().isBlank()) {
             existingMember.setMemberName(updatedData.getMemberName());
         }
-        if (updatedData.getMemberPwd() != null && !updatedData.getMemberPwd().isEmpty()) {
+        if (updatedData.getMemberPwd() != null && !updatedData.getMemberPwd().isBlank()) {
             existingMember.setMemberPwd(updatedData.getMemberPwd());
         }
         log.info("Successfully updated memberId: {}", memberId);
@@ -93,7 +95,7 @@ public class MemberService {
      * @date 2026/1/9 下午 01:57
      */
     @Transactional(readOnly = true)
-    public List<Member> getAllMembers() {
-        return memberRepository.findAll();
+    public Page<Member> getAllMembers(Pageable pageable) {
+        return memberRepository.findAll(pageable);
     }
 }
