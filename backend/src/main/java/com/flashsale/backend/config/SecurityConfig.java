@@ -23,8 +23,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * @author Yang-Hsu
  * @description http config to run filter and allow which url can go in
+ * @author Yang-Hsu
  * @date 2026/1/8 下午 04:47
  */
 @Configuration

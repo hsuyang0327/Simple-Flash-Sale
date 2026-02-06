@@ -1,12 +1,11 @@
 package com.flashsale.backend.controller;
 
 import com.flashsale.backend.common.ApiResponse;
-import com.flashsale.backend.common.ResultCode; // 需引入 ResultCode
+import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.MemberRegistRequest;
 import com.flashsale.backend.dto.request.MemberUpdateRequest;
 import com.flashsale.backend.dto.response.MemberResponse;
 import com.flashsale.backend.entity.Member;
-import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.MemberService;
 import jakarta.validation.Valid;

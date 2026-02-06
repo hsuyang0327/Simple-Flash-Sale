@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * @author Yang-Hsu
  * @description intercept service share exception
+ * @author Yang-Hsu
  * @date 2026/1/9 下午 12:00
  */
 @Slf4j

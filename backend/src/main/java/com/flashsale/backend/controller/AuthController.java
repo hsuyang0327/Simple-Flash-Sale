@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author Yang-Hsu
  * @description For Certification Controller
+ * @author Yang-Hsu
  * @date 2026/1/12 上午 10:44
  */
 @Slf4j

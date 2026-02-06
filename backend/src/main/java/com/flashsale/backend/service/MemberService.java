@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * @author Yang-Hsu
  * @description MemberService
+ * @author Yang-Hsu
  * @date 2026/1/9 下午 01:54
  */
 @Slf4j

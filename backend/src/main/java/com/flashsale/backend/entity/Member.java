@@ -6,6 +6,11 @@ import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
 
+/**
+ * @description Member Entity
+ * @author Yang-Hsu
+ * @date 2026/2/6 下午6:42
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
