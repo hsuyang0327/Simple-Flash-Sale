@@ -23,14 +23,26 @@ public enum ResultCode {
     LOGIN_FAILED(4103, "login_failed_invalid_credentials"),
     MEMBER_STATUS_LOCKED(4104, "member_account_locked"),
 
+    // Product
+    PRODUCT_NOT_FOUND(4201, "product_not_found"),
+
     // Validation
-    EMAIL_EMPTY(4201, "email_is_required"),
-    INVALID_EMAIL(4202, "invalid_email_format"),
-    PASSWORD_EMPTY(4203, "password_is_required"),
-    NAME_EMPTY(4204, "name_is_required"),
+    EMAIL_EMPTY(4401, "email_is_required"),
+    INVALID_EMAIL(4402, "invalid_email_format"),
+    PASSWORD_EMPTY(4403, "password_is_required"),
+    NAME_EMPTY(4404, "name_is_required"), //need to modify
+    PRODUCT_NAME_EMPTY(4405, "product_name_is_required"),
+    PRICE_EMPTY(4406, "price_is_required"),
+    PRICE_INVALID(4407, "price_invalid"),
+    STOCK_EMPTY(4408, "stock_is_required"),
+    STOCK_INVALID(4409, "stock_invalid"),
+    STATUS_INVALID(4410, "status_invalid"),
+    START_TIME_EMPTY(4411, "start_time_is_required"),
+    END_TIME_EMPTY(4412, "end_time_is_required"),
+    END_TIME_INVALID(4413, "end_time_must_be_after_start_time"),
+    DESCRIPTION_TOO_LONG(4414,"description_too_long"),
 
     // System
-
     SYSTEM_ERROR(5000, "server_error");
 
     private final int code;
