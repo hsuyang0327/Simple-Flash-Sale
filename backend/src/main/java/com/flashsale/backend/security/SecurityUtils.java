@@ -19,7 +19,12 @@ public class SecurityUtils {
         if (authentication == null || authentication.getDetails() == null) {
             return null;
         }
-        return (String) authentication.getDetails();
+        Object details = authentication.getDetails();
+        if (details instanceof String) {
+            return (String) details;
+        }
+        // If details is not a String (e.g., WebAuthenticationDetails), we can't get the UUID from it.
+        return null;
     }
 
     public static void checkPermission(String targetId) {
