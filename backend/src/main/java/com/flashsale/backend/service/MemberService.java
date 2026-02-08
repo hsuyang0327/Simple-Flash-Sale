@@ -1,21 +1,23 @@
 package com.flashsale.backend.service;
 
 import com.flashsale.backend.common.ResultCode;
+import com.flashsale.backend.common.util.BeanCopyUtil;
+import com.flashsale.backend.dto.request.MemberRegistRequest;
+import com.flashsale.backend.dto.request.MemberUpdateRequest;
 import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
- * @description MemberService
  * @author Yang-Hsu
+ * @description MemberService
  * @date 2026/1/9 下午 01:54
  */
 @Slf4j
@@ -31,14 +33,17 @@ public class MemberService {
      * @date 2026/1/9 下午 01:54
      */
     @Transactional
-    public Member addMember(Member member) {
-        if (memberRepository.existsByMemberEmail(member.getMemberEmail())) {
-            log.warn("Registration failed: memberEmail {} already exists", member.getMemberEmail());
+    public Member addMember(MemberRegistRequest req) {
+        log.info("Creating member: {}", req.getMemberEmail());
+        if (memberRepository.existsByMemberEmail(req.getMemberEmail())) {
+            log.warn("Registration failed: memberEmail {} already exists", req.getMemberEmail());
             throw new BusinessException(ResultCode.MEMBER_ALREADY_EXISTS);
         }
-
-        log.info("Successfully registering member: {}", member.getMemberEmail());
-        return memberRepository.save(member);
+        Member member = new Member();
+        BeanUtils.copyProperties(req, member);
+        Member savedMember = memberRepository.save(member);
+        log.info("Member created successfully with ID: {}", savedMember.getMemberId());
+        return savedMember;
     }
 
     /**
@@ -61,16 +66,13 @@ public class MemberService {
      * @date 2026/1/9 下午 01:55
      */
     @Transactional
-    public Member updateMember(String memberId, Member updatedData) {
+    public Member updateMember(String memberId, MemberUpdateRequest req) {
+        log.info("Updating member with ID: {}", memberId);
         Member existingMember = this.getMemberById(memberId);
-        if (updatedData.getMemberName() != null && !updatedData.getMemberName().isBlank()) {
-            existingMember.setMemberName(updatedData.getMemberName());
-        }
-        if (updatedData.getMemberPwd() != null && !updatedData.getMemberPwd().isBlank()) {
-            existingMember.setMemberPwd(updatedData.getMemberPwd());
-        }
-        log.info("Successfully updated memberId: {}", memberId);
-        return memberRepository.save(existingMember);
+        BeanUtils.copyProperties(req, existingMember, BeanCopyUtil.getNullPropertyNames(req));
+        Member updatedMember = memberRepository.save(existingMember);
+        log.info("Member updated successfully: {}", memberId);
+        return updatedMember;
     }
 
     /**
@@ -80,13 +82,13 @@ public class MemberService {
      */
     @Transactional
     public void deleteMember(String memberId) {
+        log.info("Deleting member with ID: {}", memberId);
         if (!memberRepository.existsById(memberId)) {
             log.warn("Delete failed: memberId {} does not exist", memberId);
             throw new BusinessException(ResultCode.MEMBER_NOT_FOUND);
         }
-
-        log.info("Deleting memberId: {}", memberId);
         memberRepository.deleteById(memberId);
+        log.info("Member deleted successfully: {}", memberId);
     }
 
     /**

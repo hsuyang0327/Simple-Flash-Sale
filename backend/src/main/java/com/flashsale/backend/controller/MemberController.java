@@ -10,6 +10,7 @@ import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Yang-Hsu
  * @date 2026/2/6 下午2:18
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
@@ -36,12 +38,8 @@ public class MemberController {
      */
     @PostMapping("/api/client/open/register")
     public ResponseEntity<ApiResponse<MemberResponse>> register(@Valid @RequestBody MemberRegistRequest req) {
-        Member member = new Member();
-        member.setMemberEmail(req.getMemberEmail());
-        member.setMemberPwd(req.getMemberPwd());
-        member.setMemberName(req.getMemberName());
-
-        Member saved = memberService.addMember(member);
+        log.info("API: Register member (Client)");
+        Member saved = memberService.addMember(req);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(saved)));
     }
 
@@ -52,6 +50,7 @@ public class MemberController {
      */
     @GetMapping("/api/client/member/{id}")
     public ResponseEntity<ApiResponse<MemberResponse>> profile(@PathVariable String id) {
+        log.info("API: Get member profile (Client): {}", id);
         SecurityUtils.checkPermission(id);
         Member member = memberService.getMemberById(id);
 
@@ -65,13 +64,9 @@ public class MemberController {
      */
     @PutMapping("/api/client/member/{id}")
     public ResponseEntity<ApiResponse<MemberResponse>> modify(@PathVariable String id, @RequestBody MemberUpdateRequest req) {
+        log.info("API: Modify member (Client): {}", id);
         SecurityUtils.checkPermission(id);
-
-        Member updateData = new Member();
-        updateData.setMemberName(req.getMemberName());
-        updateData.setMemberPwd(req.getMemberPwd());
-
-        Member updatedMember = memberService.updateMember(id, updateData);
+        Member updatedMember = memberService.updateMember(id, req);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(updatedMember)));
     }
 
@@ -82,6 +77,7 @@ public class MemberController {
      */
     @GetMapping("/api/admin/members")
     public ResponseEntity<ApiResponse<Page<MemberResponse>>> list(@PageableDefault(page = 0, size = 10, sort = "memberId", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("API: List all members (Admin)");
         Page<Member> memberPage = memberService.getAllMembers(pageable);
         Page<MemberResponse> responsePage = memberPage.map(this::convertToResponse);
 
@@ -95,6 +91,7 @@ public class MemberController {
      */
     @DeleteMapping("/api/admin/members/{id}")
     public ResponseEntity<ApiResponse<Void>> remove(@PathVariable String id) {
+        log.info("API: Delete member (Admin): {}", id);
         memberService.deleteMember(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
