@@ -18,8 +18,8 @@ import java.util.Date;
 
 
 /**
- * @description Tool for JWT
  * @author Yang-Hsu
+ * @description Tool for JWT
  * @date 2026/1/8 下午 03:47
  */
 @Slf4j
@@ -102,6 +102,21 @@ public class JwtUtils {
         return (cookie != null) ? cookie.getValue() : null;
     }
 
+    /**
+     * @description getMemberIdFromToken
+     * @author Yang-Hsu
+     * @date 2026/2/9 下午1:59
+     */
+    public String getMemberIdFromToken(String token) {
+        try {
+            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("id", String.class);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims().get("id", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void validateJwtToken(String authToken) throws ExpiredJwtException, SignatureException, MalformedJwtException, UnsupportedJwtException, IllegalArgumentException {
         Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -112,4 +127,5 @@ public class JwtUtils {
     public Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
+
 }
