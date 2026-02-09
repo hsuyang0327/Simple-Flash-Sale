@@ -13,11 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @description For Certification Controller
  * @author Yang-Hsu
+ * @description For Certification Controller
  * @date 2026/1/12 上午 10:44
  */
 @Slf4j
@@ -36,6 +39,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest req) {
+        log.info("API: Login (Client): {}", req.getEmail());
 
         JwtResponse jwtResponse = authService.login(req.getEmail(), req.getPassword());
 
@@ -57,6 +61,7 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<String>> refresh(HttpServletRequest request) {
+        log.info("API: Refresh token (Client)");
 
         String refreshToken = jwtUtils.getJwtFromCookies(request, "refresh_token");
         JwtResponse jwtResponse = authService.refresh(refreshToken);
@@ -78,11 +83,13 @@ public class AuthController {
      * @date 2026/1/12 上午 10:46
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<String>> logout() {
+    public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
+        String token = jwtUtils.getJwtFromCookies(request, "access_token");
+        String userId = (token != null && !token.isEmpty()) ? jwtUtils.getMemberIdFromToken(token) : null;
+        log.info("API: Logout (Client): {}", userId != null ? userId : "Anonymous/Expired");
 
         ResponseCookie cleanAccess = jwtUtils.getCleanAccessCookie();
         ResponseCookie cleanRefresh = jwtUtils.getCleanRefreshCookie();
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cleanAccess.toString())
                 .header(HttpHeaders.SET_COOKIE, cleanRefresh.toString())

@@ -41,13 +41,15 @@ public class AuthJwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/client/auth/") ||
+        // Exclude login and refresh endpoints from JWT validation
+        if (path.equals("/api/client/auth/login") ||
+                path.equals("/api/client/auth/refresh") ||
+                path.equals("/api/client/auth/logout") ||
                 path.startsWith("/api/client/open/") ||
                 path.startsWith("/api/admin/")) {
             filterChain.doFilter(request, response);
             return;
         }
-
         try {
             String jwt = jwtUtils.getJwtFromCookies(request, "access_token");
 
