@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,11 +69,16 @@ public class MemberService {
     @Transactional
     public Member updateMember(String memberId, MemberUpdateRequest req) {
         log.info("Updating member with ID: {}", memberId);
-        Member existingMember = this.getMemberById(memberId);
-        BeanUtils.copyProperties(req, existingMember, BeanCopyUtil.getNullPropertyNames(req));
-        Member updatedMember = memberRepository.save(existingMember);
-        log.info("Member updated successfully: {}", memberId);
-        return updatedMember;
+        try {
+            Member existingMember = this.getMemberById(memberId);
+            BeanUtils.copyProperties(req, existingMember, BeanCopyUtil.getNullPropertyNames(req));
+            Member updatedMember = memberRepository.save(existingMember);
+            log.info("Member updated successfully: {}", memberId);
+            return updatedMember;
+        } catch (ObjectOptimisticLockingFailureException e) {
+            log.warn("Update failed due to concurrent modification: {}", memberId);
+            throw new BusinessException(ResultCode.MEMBER_IS_UPDATED_BY_OTHERS);
+        }
     }
 
     /**

@@ -32,4 +32,7 @@ public class Member extends BaseEntity {
 
     @Column(name = "member_name", nullable = false, length = 20)
     private String memberName;
+
+    @Version
+    private Long version;
 }
