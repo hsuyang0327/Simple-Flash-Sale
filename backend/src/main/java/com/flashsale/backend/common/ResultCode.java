@@ -26,9 +26,11 @@ public enum ResultCode {
 
     // Product
     PRODUCT_NOT_FOUND(4201, "product_not_found"),
+    PRODUCT_IS_UPDATED_BY_OTHERS(4202, "product_is_updated_by_others"),
 
-    //Order
-    STOCK_NOT_ENOUGH(4301,"stock_not_enough"),
+    // Order
+    ORDER_NOT_FOUND(4301, "order_not_found"),
+    ORDER_IS_UPDATED_BY_OTHERS(4302, "order_is_updated_by_others"),
 
     // Validation
     EMAIL_EMPTY(4401, "email_is_required"),
@@ -44,12 +46,9 @@ public enum ResultCode {
     START_TIME_EMPTY(4411, "start_time_is_required"),
     END_TIME_EMPTY(4412, "end_time_is_required"),
     END_TIME_INVALID(4413, "end_time_must_be_after_start_time"),
-    DESCRIPTION_TOO_LONG(4414,"description_too_long"),
-    MEMBER_ID_EMPTY(4415,"member_id_is_required"),
-    PRODUCT_ID_EMPTY(4416,"product_id_is_required"),
-    QUANTITY_EMPTY(4417,"quantity_is_required"),
-    STATUS_EMPTY(4418,"status_is_required"),
-    TOTAL_PRICE_EMPTY(4419,"total_price_is_required"),
+    PRODUCT_ID_EMPTY(4414, "product_id_is_required"),
+    QUANTITY_EMPTY(4415, "quantity_is_required"),
+    QUANTITY_INVALID(4416, "quantity_invalid"),
 
     // System
     SYSTEM_ERROR(5000, "server_error");

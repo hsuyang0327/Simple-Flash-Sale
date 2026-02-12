@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * @description ProductRequest
+ * @description ProductRequest(Just For Admin)
  * @author Yang-Hsu
  * @date 2026/2/8 下午4:46
  */

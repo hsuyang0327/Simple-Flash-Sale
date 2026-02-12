@@ -47,4 +47,7 @@ public class Product extends BaseEntity {
 
     @Column(name = "end_time")
     private LocalDateTime endTime;
+
+    @Version
+    private Long version;
 }

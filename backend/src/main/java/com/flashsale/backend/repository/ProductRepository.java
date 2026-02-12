@@ -21,12 +21,11 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @author Yang-Hsu
      * @date 2026/2/7 下午10:33
      */
+// 關鍵：使用 SQL 原子操作扣減，並加入 stock >= qty 的判斷
     @Modifying
     @Transactional
-    @Query("UPDATE Product p SET p.stock = p.stock - :quantity " +
-            "WHERE p.productId = :id AND p.stock >= :quantity")
-    int decreaseStock(@Param("id") String id, @Param("quantity") Integer quantity);
-
+    @Query("UPDATE Product p SET p.stock = p.stock - :qty WHERE p.productId = :id AND p.stock >= :qty")
+    int decreaseStock(@Param("id") String id, @Param("qty") Integer qty);
     /**
      * @description find by product name containing
      * @author Yang-Hsu

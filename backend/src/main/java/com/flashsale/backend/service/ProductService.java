@@ -11,99 +11,103 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @description ProductService
  * @author Yang-Hsu
- * @date 2026/2/8 上午1:06
+ * @date 2026/2/10 下午3:20
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor //lombok auto for constructor if declare with final (not for autowired)
+@RequiredArgsConstructor
 public class ProductService {
+
     private final ProductRepository productRepository;
 
     /**
-     * @description GetAllProducts
+     * @description getAvailableProducts
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:06
+     * @date 2026/2/10 下午3:20
      */
     @Transactional(readOnly = true)
-    public Page<Product> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable);
+    public Page<Product> getAvailableProducts(Pageable pageable) {
+        return productRepository.findAvailableProducts(pageable);
     }
 
     /**
-     * @description GetProductById
+     * @description getProductById
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
+     * @date 2026/2/10 下午3:20
      */
     @Transactional(readOnly = true)
-    public Product getProductById(String productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new BusinessException(ResultCode.PRODUCT_NOT_FOUND));
+    public Product getProductById(String id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Product not found: {}", id);
+                    return new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
+                });
     }
 
     /**
-     * @description CreateProduct
+     * @description createProduct
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
+     * @date 2026/2/10 下午3:20
      */
     @Transactional
     public Product createProduct(ProductRequest request) {
         log.info("Creating product: {}", request.getProductName());
         Product product = new Product();
         BeanUtils.copyProperties(request, product);
-        Product savedProduct = productRepository.save(product);
-        log.info("Product created successfully with ID: {}", savedProduct.getProductId());
-        return savedProduct;
+        return productRepository.save(product);
     }
 
-    /**
-     * @description UpdateProduct
-     * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
-     */
+  /**
+   * @description updateProduct(Optimistic Lock)
+   * @author Yang-Hsu
+   * @date 2026/2/10 下午3:21
+   */
     @Transactional
     public Product updateProduct(String productId, ProductRequest request) {
-        log.info("Updating product with ID: {}", productId);
-        Product existingProduct = getProductById(productId);
-        BeanUtils.copyProperties(request, existingProduct, BeanCopyUtil.getNullPropertyNames(request));
-        Product updatedProduct = productRepository.save(existingProduct);
-        log.info("Product updated successfully: {}", productId);
-        return updatedProduct;
+        log.info("Updating product: {}", productId);
+        try {
+            Product existingProduct = getProductById(productId);
+            BeanUtils.copyProperties(request, existingProduct, BeanCopyUtil.getNullPropertyNames(request));
+            Product updatedProduct = productRepository.save(existingProduct);
+            log.info("Product updated successfully: {}", productId);
+            return updatedProduct;
+
+        } catch (ObjectOptimisticLockingFailureException e) {
+            log.warn("Update product failed due to concurrent modification: {}", productId);
+            throw new BusinessException(ResultCode.PRODUCT_IS_UPDATED_BY_OTHERS);
+        }
     }
 
     /**
-     * @description DeleteProduct
+     * @description deleteProduct
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:08
+     * @date 2026/2/10 下午3:21
      */
     @Transactional
-    public void deleteProduct(String productId) {
-        log.info("Deleting product with ID: {}", productId);
-        Product product = getProductById(productId);
-        productRepository.delete(product);
-        log.info("Product deleted successfully: {}", productId);
+    public void deleteProduct(String id) {
+        log.info("Deleting product: {}", id);
+        if (!productRepository.existsById(id)) {
+            log.warn("Delete product failed, id not found: {}", id);
+            throw new BusinessException(ResultCode.PRODUCT_NOT_FOUND);
+        }
+        productRepository.deleteById(id);
     }
 
     /**
-     * @description Search products by name
+     * @description searchProducts
      * @author Yang-Hsu
+     * @date 2026/2/10 下午3:22
      */
     @Transactional(readOnly = true)
     public Page<Product> searchProducts(String productName, Pageable pageable) {
         return productRepository.findByProductNameContaining(productName, pageable);
     }
 
-    /**
-     * @description Get available products (On shelf and not expired)
-     * @author Yang-Hsu
-     */
-    @Transactional(readOnly = true)
-    public Page<Product> getAvailableProducts(Pageable pageable) {
-        return productRepository.findAvailableProducts(pageable);
-    }
 }
