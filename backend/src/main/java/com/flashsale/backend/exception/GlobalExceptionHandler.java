@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
-        String errorTagName = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        String errorTagName = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
 
         ResultCode resultCode;
         try {

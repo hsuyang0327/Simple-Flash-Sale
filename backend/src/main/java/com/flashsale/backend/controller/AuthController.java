@@ -6,6 +6,9 @@ import com.flashsale.backend.dto.request.LoginRequest;
 import com.flashsale.backend.dto.response.JwtResponse;
 import com.flashsale.backend.security.JwtUtils;
 import com.flashsale.backend.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @description For Certification Controller
  * @date 2026/1/12 上午 10:44
  */
+@Tag(name = "Authentication", description = "APIs for user authentication, including login, logout, and token refresh.")
 @Slf4j
 @RestController
 @RequestMapping("/api/client/auth")
@@ -32,11 +36,11 @@ public class AuthController {
     private final AuthService authService;
     private final JwtUtils jwtUtils;
 
-    /**
-     * @description Api for login logical
-     * @author Yang-Hsu
-     * @date 2026/1/12 上午 11:05
-     */
+    @Operation(summary = "User Login", description = "Authenticates a user and returns JWT access and refresh tokens in secure HTTP-only cookies.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest req) {
         log.info("API: Login (Client): {}", req.getEmail());
@@ -54,11 +58,11 @@ public class AuthController {
                 .body(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description API when need to refresh token and generate both at rt http only cookie
-     * @author Yang-Hsu
-     * @date 2026/1/12 上午 11:03
-     */
+    @Operation(summary = "Refresh Token", description = "Refreshes an expired access token using a valid refresh token. Both tokens are rotated and returned in new HTTP-only cookies.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    })
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<String>> refresh(HttpServletRequest request) {
         log.info("API: Refresh token (Client)");
@@ -77,11 +81,10 @@ public class AuthController {
                 .body(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description API when is LogOut clear the cookie in backend
-     * @author Yang-Hsu
-     * @date 2026/1/12 上午 10:46
-     */
+    @Operation(summary = "User Logout", description = "Logs out the user by clearing the access and refresh token cookies.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Logout successful")
+    })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
         String token = jwtUtils.getJwtFromCookies(request, "access_token");

@@ -13,7 +13,7 @@ import lombok.Data;
 public class MemberRegistRequest {
 
     @NotBlank(message = "EMAIL_EMPTY")
-    @Email(message = "INVALID_EMAIL_FORMAT")
+    @Email(message = "INVALID_EMAIL")
     private String memberEmail;
 
     @NotBlank(message = "PASSWORD_EMPTY")
