@@ -5,13 +5,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serial;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
- * @description Product Entity
+ * @description Product
  * @author Yang-Hsu
- * @date 2026/2/8 下午4:47
+ * @date 2026/2/17 下午1:33
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -30,24 +28,9 @@ public class Product extends BaseEntity {
     @Column(name = "product_name", nullable = false, length = 100)
     private String productName;
 
-    @Column(name = "price", nullable = false)
-    private BigDecimal price;
-
-    @Column(name = "stock", nullable = false)
-    private Integer stock;
-
     @Column(name = "description", length = 255)
     private String description;
 
     @Column(name = "status", nullable = false)
-    private Integer status = 1; //Product Status: 0-OFF_SHELF, 1-ON_SHELF, 2-BANNED
-
-    @Column(name = "start_time")
-    private LocalDateTime startTime;
-
-    @Column(name = "end_time")
-    private LocalDateTime endTime;
-
-    @Version
-    private Long version;
+    private Integer status = 0; //Product Status: 0-OFF_SHELF, 1-ON_SHELF, 2-BANNED
 }

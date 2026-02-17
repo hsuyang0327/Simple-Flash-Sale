@@ -8,9 +8,9 @@ import java.io.Serial;
 import java.math.BigDecimal;
 
 /**
- * @description Order Entity
+ * @description Order
  * @author Yang-Hsu
- * @date 2026/2/12 下午9:45
+ * @date 2026/2/17 下午1:34
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -31,6 +31,9 @@ public class Order extends BaseEntity {
 
     @Column(name = "product_id", nullable = false, length = 36)
     private String productId;
+
+    @Column(name = "event_id", nullable = false, length = 36)
+    private String eventId;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;

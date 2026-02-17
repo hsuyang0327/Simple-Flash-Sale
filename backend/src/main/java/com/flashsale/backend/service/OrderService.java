@@ -4,17 +4,22 @@ import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.OrderRequest;
 import com.flashsale.backend.dto.response.OrderAdminResponse;
 import com.flashsale.backend.dto.response.OrderClientResponse;
+import com.flashsale.backend.entity.Event;
 import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
+import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.MemberRepository;
 import com.flashsale.backend.repository.OrderRepository;
 import com.flashsale.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +29,7 @@ import java.math.BigDecimal;
 /**
  * @author Yang-Hsu
  * @description OrderService
+ * @date 2026/2/17 下午1:25
  */
 @Slf4j
 @Service
@@ -33,71 +39,92 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
+    private final EventRepository eventRepository;
     private final RedisStockService redisStockService;
+    private final RedisTemplate<String, Object> redisTemplate; // For rollback
 
+    /**
+     * @description Create Order (Client)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:26
+     */
     @Transactional
     public Order createOrderDB(OrderRequest request) {
-        log.info("Creating order and product from DB for member: {}, product: {}", request.getMemberId(), request.getProductId());
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new BusinessException(ResultCode.PRODUCT_NOT_FOUND));
-        if (product.getStock() < request.getQuantity()) {
+        log.info("Creating order for member: {}, event: {}", request.getMemberId(), request.getEventId());
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
+        if (event.getStock() < request.getQuantity()) {
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
-        int updatedRows = productRepository.decreaseStock(product.getProductId(), request.getQuantity());
+        int updatedRows = eventRepository.decreaseStock(event.getEventId(), request.getQuantity());
         if (updatedRows == 0) {
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
         Order order = new Order();
         order.setMemberId(request.getMemberId());
-        order.setProductId(request.getProductId());
+        order.setEventId(request.getEventId());
+        order.setProductId(event.getProductId());
         order.setQuantity(request.getQuantity());
-        order.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         order.setStatus("PENDING");
-
         Order savedOrder = orderRepository.save(order);
-        log.info("Order From DB created successfully: {}", savedOrder.getOrderId());
+        log.info("Order created successfully: {}", savedOrder.getOrderId());
         return savedOrder;
     }
 
+    /**
+     * @description Create Order (Redis)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:28
+     */
     @Transactional
     public Order createOrderRedis(OrderRequest request) {
-        log.info("Creating order and product from Redis for member: {}, product: {}", request.getMemberId(), request.getProductId());
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new BusinessException(ResultCode.PRODUCT_NOT_FOUND));
-        boolean success = redisStockService.decreaseStock(request.getProductId(), request.getQuantity());
+        log.info("Creating order (Redis) for member: {}, event: {}", request.getMemberId(), request.getEventId());
+
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
+
+        boolean success = redisStockService.decreaseStock(event.getEventId(), request.getQuantity());
+
         if (!success) {
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
+
+        int updatedRows = eventRepository.decreaseStock(event.getEventId(), request.getQuantity());
+        if (updatedRows == 0) {
+             // Rollback Redis stock
+             String stockKey = "event:stock:" + event.getEventId();
+             redisTemplate.opsForValue().increment(stockKey, request.getQuantity());
+             throw new BusinessException(ResultCode.STOCK_INVALID);
+        }
+
         Order order = new Order();
         order.setMemberId(request.getMemberId());
-        order.setProductId(request.getProductId());
+        order.setEventId(request.getEventId());
+        order.setProductId(event.getProductId());
         order.setQuantity(request.getQuantity());
-        order.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         order.setStatus("PENDING");
-        Order savedOrder = orderRepository.save(order);
-        log.info("Order from Redis created successfully: {}", savedOrder.getOrderId());
-        return savedOrder;
+        return orderRepository.save(order);
     }
 
-
     /**
-     * @description Update Order (Client) - e.g. cancel
+     * @description Update Order (Client)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:28
      */
     @Transactional
     public Order updateOrder(String memberId, String orderId, OrderRequest request) {
         log.info("Updating order: {}", orderId);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
-
         if (!order.getMemberId().equals(memberId)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
-
         order.setQuantity(request.getQuantity());
-
-        Product product = productRepository.findById(order.getProductId())
-                .orElseThrow(() -> new BusinessException(ResultCode.PRODUCT_NOT_FOUND));
-        order.setTotalPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        Event event = eventRepository.findById(order.getEventId())
+                .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
+        order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
 
         try {
             Order updatedOrder = orderRepository.save(order);
@@ -111,6 +138,8 @@ public class OrderService {
 
     /**
      * @description Get Order by ID (Client)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:30
      */
     @Transactional(readOnly = true)
     public Order getOrderById(String memberId, String orderId) {
@@ -125,6 +154,8 @@ public class OrderService {
 
     /**
      * @description Get Order by ID (Admin)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:31
      */
     @Transactional(readOnly = true)
     public Order getOrderByIdAdmin(String orderId) {
@@ -134,6 +165,8 @@ public class OrderService {
 
     /**
      * @description Search Orders (Admin)
+     * @author Yang-Hsu
+     * @date 2026/2/17 下午1:31
      */
     @Transactional(readOnly = true)
     public Page<Order> searchOrders(String productName, String memberName, Pageable pageable) {

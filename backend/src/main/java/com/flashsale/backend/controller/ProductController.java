@@ -38,8 +38,8 @@ public class ProductController {
     @GetMapping("/api/client/open/products")
     public ResponseEntity<ApiResponse<Page<ProductClientResponse>>> listProducts(
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        log.info("API: Get all available products (Client)");
-        Page<Product> products = productService.getAvailableProducts(pageable);
+        log.info("API: Get all products (Client)");
+        Page<Product> products = productService.getAllProducts(pageable);
         Page<ProductClientResponse> response = products.map(this::convertToClientResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
@@ -123,11 +123,7 @@ public class ProductController {
         return ProductClientResponse.builder()
                 .productId(product.getProductId())
                 .productName(product.getProductName())
-                .price(product.getPrice())
-                .stock(product.getStock())
                 .description(product.getDescription())
-                .startTime(product.getStartTime())
-                .endTime(product.getEndTime())
                 .build();
     }
 
@@ -135,12 +131,8 @@ public class ProductController {
         return ProductAdminResponse.builder()
                 .productId(product.getProductId())
                 .productName(product.getProductName())
-                .price(product.getPrice())
-                .stock(product.getStock())
                 .description(product.getDescription())
                 .status(product.getStatus())
-                .startTime(product.getStartTime())
-                .endTime(product.getEndTime())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

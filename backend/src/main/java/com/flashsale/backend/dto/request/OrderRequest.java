@@ -6,18 +6,19 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
- * @description Order Request (Just For Client)
+ * @description OrderRequest
  * @author Yang-Hsu
+ * @date 2026/2/17 下午1:35
  */
 @Data
 public class OrderRequest {
 
-    @NotBlank(message = "PRODUCT_ID_EMPTY")
-    private String productId;
+    private String memberId;
+
+    @NotBlank(message = "EVENT_ID_EMPTY")
+    private String eventId;
 
     @NotNull(message = "QUANTITY_EMPTY")
     @Min(value = 1, message = "QUANTITY_INVALID")
     private Integer quantity;
-
-    private String memberId; //Just for Jmeter Test
 }

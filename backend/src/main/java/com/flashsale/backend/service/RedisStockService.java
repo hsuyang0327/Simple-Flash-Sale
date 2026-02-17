@@ -3,7 +3,6 @@ package com.flashsale.backend.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +29,8 @@ public class RedisStockService {
                     "end; " +
                     "return redis.call('decrby', KEYS[1], ARGV[1]);";
 
-    public boolean decreaseStock(String productId, int quantity) {
-        String key = "product:stock:" + productId;
+    public boolean decreaseStock(String eventId, int quantity) {
+        String key = "event:stock:" + eventId;
         try {
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(DECREASE_STOCK_LUA, Long.class);
 
@@ -44,15 +43,15 @@ public class RedisStockService {
             );
 
             if (result == -1) {
-                log.warn("Stock reduction failed. Product ID: {}, Requested Quantity: {}, Reason: Insufficient stock or Key not found", productId, quantity);
+                log.warn("Stock reduction failed. Event ID: {}, Requested Quantity: {}, Reason: Insufficient stock or Key not found", eventId, quantity);
                 return false;
             }
 
-            log.info("Stock reduced successfully. Product ID: {}, Reduced By: {}, Remaining Stock: {}", productId, quantity, result);
+            log.info("Stock reduced successfully. Event ID: {}, Reduced By: {}, Remaining Stock: {}", eventId, quantity, result);
             return true;
 
         } catch (Exception e) {
-            log.error("Exception occurred during Redis stock reduction for Product ID: {}", productId, e);
+            log.error("Exception occurred during Redis stock reduction for Event ID: {}", eventId, e);
             return false;
         }
     }
