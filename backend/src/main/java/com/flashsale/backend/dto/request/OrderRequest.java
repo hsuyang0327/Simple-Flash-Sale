@@ -13,6 +13,7 @@ import lombok.Data;
 @Data
 public class OrderRequest {
 
+    @NotBlank(message = "MEMBER_ID_EMPTY")
     private String memberId;
 
     @NotBlank(message = "EVENT_ID_EMPTY")

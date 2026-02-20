@@ -28,13 +28,16 @@ public enum ResultCode {
     PRODUCT_NOT_FOUND(4201, "product_not_found"),
     PRODUCT_IS_UPDATED_BY_OTHERS(4202, "product_is_updated_by_others"),
     PRODUCT_NO_EVENT(4203, "product_no_event"),
+    PRODUCT_EVENT_DUPLICATED(4204, "product_no_active_event"),
 
     // Order
     ORDER_NOT_FOUND(4301, "order_not_found"),
     ORDER_IS_UPDATED_BY_OTHERS(4302, "order_is_updated_by_others"),
+    ORDER_STATUS_INVALID(4303, "order_status_invalid"),
 
     // Event
     EVENT_NOT_FOUND(4401, "event_not_found"),
+    EVENT_EXPIRED(4402, "event_expired"),
 
     // Job
     JOB_NOT_FOUND(4501, "job_not_found"),
@@ -61,6 +64,8 @@ public enum ResultCode {
     QUANTITY_EMPTY(4615, "quantity_is_required"),
     QUANTITY_INVALID(4616, "quantity_invalid"),
     EVENT_ID_EMPTY(4617, "event_id_is_required"),
+    ORDER_ID_EMPTY(4618, "order_id_is_required"),
+    MEMBER_ID_EMPTY(4619, "member_id_is_required"),
 
     // System
     SYSTEM_ERROR(5000, "server_error");

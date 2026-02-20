@@ -27,8 +27,9 @@ public class Event extends BaseEntity {
     @Column(name = "event_id", nullable = false, length = 36)
     private String eventId;
 
-    @Column(name = "product_id", nullable = false, length = 36)
-    private String productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;
@@ -43,7 +44,7 @@ public class Event extends BaseEntity {
     private LocalDateTime endTime;
 
     @Column(name = "status", nullable = false)
-    private Integer status = 0; // 0-UPCOMING, 1-ACTIVE, 2-ENDED
+    private Integer status = 0; // 0-INACTIVE, 1-ACTIVE, 2-ENDED
 
     @Version
     private Long version;

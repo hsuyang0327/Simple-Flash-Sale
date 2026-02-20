@@ -1,9 +1,12 @@
 package com.flashsale.backend.service;
 
 import com.flashsale.backend.common.ResultCode;
+import com.flashsale.backend.config.RabbitConfig;
 import com.flashsale.backend.dto.request.OrderRequest;
+import com.flashsale.backend.dto.request.PaymentRequest;
 import com.flashsale.backend.dto.response.OrderAdminResponse;
 import com.flashsale.backend.dto.response.OrderClientResponse;
+import com.flashsale.backend.dto.response.OrderStatusResponse;
 import com.flashsale.backend.entity.Event;
 import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.entity.Order;
@@ -17,6 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,6 +30,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -41,7 +48,14 @@ public class OrderService {
     private final MemberRepository memberRepository;
     private final EventRepository eventRepository;
     private final RedisStockService redisStockService;
-    private final RedisTemplate<String, Object> redisTemplate; // For rollback
+
+    @Qualifier("redisTemplateDb0")
+    private final RedisTemplate<String, Object> redisTemplateForStock;
+
+    @Qualifier("redisTemplateDb1")
+    private final RedisTemplate<String, Object> redisTemplateForOrder;
+
+    private final RabbitTemplate rabbitTemplate;
 
     /**
      * @description Create Order (Client)
@@ -63,7 +77,7 @@ public class OrderService {
         Order order = new Order();
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
-        order.setProductId(event.getProductId());
+        order.setProductId(event.getProduct().getProductId());
         order.setQuantity(request.getQuantity());
         order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         order.setStatus("PENDING");
@@ -80,32 +94,97 @@ public class OrderService {
     @Transactional
     public Order createOrderRedis(OrderRequest request) {
         log.info("Creating order (Redis) for member: {}, event: {}", request.getMemberId(), request.getEventId());
-
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
-
         boolean success = redisStockService.decreaseStock(event.getEventId(), request.getQuantity());
-
         if (!success) {
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
-
-        int updatedRows = eventRepository.decreaseStock(event.getEventId(), request.getQuantity());
-        if (updatedRows == 0) {
-             // Rollback Redis stock
-             String stockKey = "event:stock:" + event.getEventId();
-             redisTemplate.opsForValue().increment(stockKey, request.getQuantity());
-             throw new BusinessException(ResultCode.STOCK_INVALID);
-        }
-
         Order order = new Order();
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
-        order.setProductId(event.getProductId());
+        order.setProductId(event.getProduct().getProductId());
         order.setQuantity(request.getQuantity());
         order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
         order.setStatus("PENDING");
         return orderRepository.save(order);
+    }
+
+    /**
+     * @description createOrder(Not for Test)
+     * @author Yang-Hsu
+     * @date 2026/2/19 下午8:27
+     */
+    public Order createOrder(OrderRequest request) {
+        log.info("Creating order (MQ) for member: {}, event: {}", request.getMemberId(), request.getEventId());
+
+        // 1. Check Event existence and info
+        Event event = eventRepository.findById(request.getEventId())
+                .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
+        // 2. Deduct Redis Stock
+        boolean success = redisStockService.decreaseStock(event.getProduct().getProductId(), request.getQuantity());
+        if (!success) {
+            log.warn("Create Order (MQ) failed: Insufficient stock for product: {}", event.getProduct().getProductId());
+            throw new BusinessException(ResultCode.STOCK_INVALID);
+        }
+        // 3. Prepare Order Object (Status: PENDING)
+        Order order = new Order();
+        order.setMemberId(request.getMemberId());
+        order.setEventId(request.getEventId());
+        order.setProductId(event.getProduct().getProductId());
+        order.setQuantity(request.getQuantity());
+        order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+        order.setStatus("PENDING");
+        try {
+            rabbitTemplate.convertAndSend(RabbitConfig.ORDER_EXCHANGE, RabbitConfig.ORDER_ROUTING_KEY, order);
+            log.info("Order request sent to queue for member: {}", request.getMemberId());
+        } catch (Exception e) {
+            log.error("Failed to send order to MQ", e);
+            String stockKey = "productId:" + event.getProduct().getProductId();
+            redisTemplateForStock.opsForHash().increment(stockKey, "stock", request.getQuantity());
+            throw new BusinessException(ResultCode.SYSTEM_ERROR);
+        }
+        return order;
+    }
+
+    /**
+     * @description Rabbit MQ Consumer
+     * @author Yang-Hsu
+     * @date 2026/2/19 下午8:27
+     */
+    @RabbitListener(queues = RabbitConfig.ORDER_QUEUE)
+    @Transactional
+    public void processOrderMessage(Order order) {
+        log.info("Processing order from MQ for member: {}", order.getMemberId());
+        try {
+            //Consumer Need to do
+            Order savedOrder = orderRepository.save(order);
+            String memberOrderKey = "member:order:" + savedOrder.getMemberId();
+            redisTemplateForOrder.opsForValue().set(memberOrderKey, savedOrder);
+            log.info("Order processed and cached in Redis: {}", savedOrder.getOrderId());
+        } catch (Exception e) {
+            log.error("Error processing order from MQ", e);
+        }
+    }
+
+    /**
+     * @description Get Order Status from Redis
+     * @author Yang-Hsu
+     */
+    public OrderStatusResponse getOrderStatusFromRedis(String memberId) {
+        String orderKey = "member:order:" + memberId;
+        Order order = (Order) redisTemplateForOrder.opsForValue().get(orderKey);
+
+        if (order != null) {
+            return OrderStatusResponse.builder()
+                    .status("SUCCESS")
+                    .order(order)
+                    .build();
+        } else {
+            return OrderStatusResponse.builder()
+                    .status("PENDING")
+                    .build();
+        }
     }
 
     /**
@@ -114,18 +193,17 @@ public class OrderService {
      * @date 2026/2/17 下午1:28
      */
     @Transactional
-    public Order updateOrder(String memberId, String orderId, OrderRequest request) {
+    public Order updateOrder(String orderId, OrderRequest request) {
         log.info("Updating order: {}", orderId);
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
-        if (!order.getMemberId().equals(memberId)) {
+        if (!order.getMemberId().equals(request.getMemberId())) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
         order.setQuantity(request.getQuantity());
         Event event = eventRepository.findById(order.getEventId())
                 .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
         order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
-
         try {
             Order updatedOrder = orderRepository.save(order);
             log.info("Order updated successfully: {}", orderId);
@@ -145,7 +223,6 @@ public class OrderService {
     public Order getOrderById(String memberId, String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
-
         if (!order.getMemberId().equals(memberId)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
@@ -173,6 +250,24 @@ public class OrderService {
         return orderRepository.searchOrders(productName, memberName, pageable);
     }
 
+    /**
+     * @description Simulate payment success
+     * @author Yang-Hsu
+     */
+    @Transactional
+    public Order payOrder(PaymentRequest paymentRequest) {
+        log.info("Processing payment for order: {}, member: {}", paymentRequest.getOrderId(), paymentRequest.getMemberId());
+        Order order = getOrderById(paymentRequest.getMemberId(), paymentRequest.getOrderId());
+        if (!"PENDING".equals(order.getStatus())) {
+            log.warn("Payment failed for order {}: status is not PENDING", paymentRequest.getOrderId());
+            throw new BusinessException(ResultCode.ORDER_STATUS_INVALID);
+        }
+        order.setStatus("PAID");
+        Order savedOrder = orderRepository.save(order);
+        log.info("Order {} status updated to PAID", paymentRequest.getOrderId());
+        return savedOrder;
+    }
+
     public OrderClientResponse convertToClientResponse(Order order) {
         Product product = productRepository.findById(order.getProductId()).orElse(null);
         String productName = product != null ? product.getProductName() : "Unknown";
@@ -186,11 +281,9 @@ public class OrderService {
                 .createdAt(order.getCreatedAt())
                 .build();
     }
-
     public OrderAdminResponse convertToAdminResponse(Order order) {
         Product product = productRepository.findById(order.getProductId()).orElse(null);
         Member member = memberRepository.findById(order.getMemberId()).orElse(null);
-
         return OrderAdminResponse.builder()
                 .orderId(order.getOrderId())
                 .memberId(order.getMemberId())

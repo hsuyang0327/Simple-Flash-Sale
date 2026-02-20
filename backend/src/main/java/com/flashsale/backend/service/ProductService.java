@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @description ProductService
  * @author Yang-Hsu
+ * @description ProductService
  * @date 2026/2/8 上午1:06
  */
 @Slf4j
@@ -58,10 +58,7 @@ public class ProductService {
         log.info("Creating product: {}", request.getProductName());
         Product product = new Product();
         BeanUtils.copyProperties(request, product);
-        
-        // Force status to 0 (OFF_SHELF) initially
         product.setStatus(0);
-
         Product savedProduct = productRepository.save(product);
         log.info("Product created successfully with ID: {}", savedProduct.getProductId());
         return savedProduct;
@@ -75,15 +72,16 @@ public class ProductService {
     @Transactional
     public Product updateProduct(String productId, ProductRequest request) {
         log.info("Updating product with ID: {}", productId);
-
-        // Check if trying to put on shelf (status = 1)
         if (request.getStatus() != null && request.getStatus() == 1) {
-            if (!eventRepository.existsByProductId(productId)) {
-                log.warn("Cannot put product on shelf without event: {}", productId);
+            long activeEventCount = eventRepository.countActiveEventsByProductId(productId);
+            if (activeEventCount == 0) {
+                log.warn("Cannot put product on shelf: No active event found for productId: {}", productId);
                 throw new BusinessException(ResultCode.PRODUCT_NO_EVENT);
+            } else if (activeEventCount > 1) {
+                log.error("Data integrity violation: Product {} has {} active events", productId, activeEventCount);
+                throw new BusinessException(ResultCode.PRODUCT_EVENT_DUPLICATED);
             }
         }
-
         Product existingProduct = getProductById(productId);
         BeanUtils.copyProperties(request, existingProduct, BeanCopyUtil.getNullPropertyNames(request));
         Product updatedProduct = productRepository.save(existingProduct);
