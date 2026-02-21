@@ -34,8 +34,9 @@ public class RedisController {
     private static final String PREHEATED_PRODUCT_KEYS = "preheated_product_keys";
 
     /**
-     * @description Get all preheated products from Redis with pagination
+     * @description Get preheated products
      * @author Yang-Hsu
+     * @date 2026/2/21 下午4:28
      */
     @GetMapping("/preheated-products")
     public ResponseEntity<ApiResponse<Page<Map<Object, Object>>>> getPreheatedProducts(Pageable pageable) {
@@ -57,8 +58,9 @@ public class RedisController {
     }
 
     /**
-     * @description Get order status by memberId for polling
+     * @description Get order status
      * @author Yang-Hsu
+     * @date 2026/2/21 下午4:28
      */
     @GetMapping("/order-status/{memberId}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderStatus(@PathVariable String memberId) {

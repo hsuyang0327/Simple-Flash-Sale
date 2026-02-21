@@ -38,7 +38,6 @@ public class PaymentController {
     public ResponseEntity<ApiResponse<OrderClientResponse>> payOrder(@Valid @RequestBody PaymentRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         log.info("API: Pay order (Client): orderId={}, memberId={}", request.getOrderId(), memberId);
-
         Order order = orderService.payOrder(request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, orderService.convertToClientResponse(order)));
     }

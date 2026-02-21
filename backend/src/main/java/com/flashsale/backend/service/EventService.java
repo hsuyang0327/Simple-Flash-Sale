@@ -5,7 +5,6 @@ import com.flashsale.backend.common.util.BeanCopyUtil;
 import com.flashsale.backend.dto.request.EventRequest;
 import com.flashsale.backend.dto.response.EventProductDTO;
 import com.flashsale.backend.entity.Event;
-import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.EventRepository;
 import lombok.RequiredArgsConstructor;

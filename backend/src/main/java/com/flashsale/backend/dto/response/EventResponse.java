@@ -7,8 +7,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * @description Event Response DTO
+ * @description EventResponse
  * @author Yang-Hsu
+ * @date 2026/2/21 下午4:30
  */
 @Data
 @Builder

@@ -5,7 +5,6 @@ import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.OrderRequest;
 import com.flashsale.backend.dto.response.OrderClientResponse;
 import com.flashsale.backend.entity.Order;
-import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

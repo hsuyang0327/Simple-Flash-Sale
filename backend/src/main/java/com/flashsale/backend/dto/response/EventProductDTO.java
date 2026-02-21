@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * @description EventProductDTO
+ * @author Yang-Hsu
+ * @date 2026/2/21 下午4:30
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -12,8 +12,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * @description Event Request DTO
+ * @description EventRequest
  * @author Yang-Hsu
+ * @date 2026/2/21 下午4:29
  */
 @Data
 @ValidDateRange(message = "END_TIME_INVALID")

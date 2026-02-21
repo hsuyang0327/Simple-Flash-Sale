@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -30,7 +29,6 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -148,26 +146,6 @@ public class OrderService {
     }
 
     /**
-     * @description Rabbit MQ Consumer
-     * @author Yang-Hsu
-     * @date 2026/2/19 下午8:27
-     */
-    @RabbitListener(queues = RabbitConfig.ORDER_QUEUE)
-    @Transactional
-    public void processOrderMessage(Order order) {
-        log.info("Processing order from MQ for member: {}", order.getMemberId());
-        try {
-            //Consumer Need to do
-            Order savedOrder = orderRepository.save(order);
-            String memberOrderKey = "member:order:" + savedOrder.getMemberId();
-            redisTemplateForOrder.opsForValue().set(memberOrderKey, savedOrder);
-            log.info("Order processed and cached in Redis: {}", savedOrder.getOrderId());
-        } catch (Exception e) {
-            log.error("Error processing order from MQ", e);
-        }
-    }
-
-    /**
      * @description Get Order Status from Redis
      * @author Yang-Hsu
      */
@@ -223,6 +201,7 @@ public class OrderService {
     public Order getOrderById(String memberId, String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
+
         if (!order.getMemberId().equals(memberId)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
@@ -253,18 +232,27 @@ public class OrderService {
     /**
      * @description Simulate payment success
      * @author Yang-Hsu
+     * @date 2026/2/21 上午12:06
      */
     @Transactional
-    public Order payOrder(PaymentRequest paymentRequest) {
-        log.info("Processing payment for order: {}, member: {}", paymentRequest.getOrderId(), paymentRequest.getMemberId());
-        Order order = getOrderById(paymentRequest.getMemberId(), paymentRequest.getOrderId());
+    public Order payOrder(PaymentRequest request) {
+        log.info("Processing payment for order: {}, member: {}", request.getOrderId(), request.getMemberId());
+
+        Order order = orderRepository.findByIdForUpdate(request.getOrderId())
+                .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
+
+        if (!order.getMemberId().equals(request.getMemberId())) {
+            throw new BusinessException(ResultCode.TOKEN_INVALID);
+        }
+
         if (!"PENDING".equals(order.getStatus())) {
-            log.warn("Payment failed for order {}: status is not PENDING", paymentRequest.getOrderId());
+            log.warn("Payment failed for order {}: status is not PENDING", request.getOrderId());
             throw new BusinessException(ResultCode.ORDER_STATUS_INVALID);
         }
+
         order.setStatus("PAID");
         Order savedOrder = orderRepository.save(order);
-        log.info("Order {} status updated to PAID", paymentRequest.getOrderId());
+        log.info("Order {} status updated to PAID", request.getOrderId());
         return savedOrder;
     }
 
@@ -281,6 +269,7 @@ public class OrderService {
                 .createdAt(order.getCreatedAt())
                 .build();
     }
+
     public OrderAdminResponse convertToAdminResponse(Order order) {
         Product product = productRepository.findById(order.getProductId()).orElse(null);
         Member member = memberRepository.findById(order.getMemberId()).orElse(null);
@@ -297,4 +286,5 @@ public class OrderService {
                 .updatedAt(order.getUpdatedAt())
                 .build();
     }
+
 }
