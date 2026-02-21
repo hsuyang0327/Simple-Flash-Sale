@@ -46,7 +46,8 @@ public class AuthJwtFilter extends OncePerRequestFilter {
                 path.equals("/api/client/auth/refresh") ||
                 path.equals("/api/client/auth/logout") ||
                 path.startsWith("/api/client/open/") ||
-                path.startsWith("/api/admin/")) {
+                path.startsWith("/api/admin/")||
+                path.startsWith("/api/test/")) {
             filterChain.doFilter(request, response);
             return;
         }

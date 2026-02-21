@@ -3,20 +3,20 @@ package com.flashsale.backend.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * @description ProductAdminResponse
+ * @description Order Response for Client
  * @author Yang-Hsu
- * @date 2026/2/17 下午1:36
  */
 @Data
 @Builder
-public class ProductAdminResponse {
-    private String productId;
+public class OrderClientResponse {
+    private String orderId;
     private String productName;
-    private String description;
-    private Integer status;
+    private Integer quantity;
+    private BigDecimal totalPrice;
+    private String status;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

@@ -1,26 +1,17 @@
 package com.flashsale.backend.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 /**
- * @description Product Response for Client (Public view)
+ * @description ProductClientResponse
  * @author Yang-Hsu
+ * @date 2026/2/17 下午1:35
  */
 @Data
 @Builder
 public class ProductClientResponse {
     private String productId;
     private String productName;
-    private BigDecimal price;
-    private Integer stock;
     private String description;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime startTime;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime endTime;
 }

@@ -5,6 +5,7 @@ import com.flashsale.backend.common.util.BeanCopyUtil;
 import com.flashsale.backend.dto.request.ProductRequest;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
+import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @description ProductService
  * @author Yang-Hsu
+ * @description ProductService
  * @date 2026/2/8 上午1:06
  */
 @Slf4j
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor //lombok auto for constructor if declare with final (not for autowired)
 public class ProductService {
     private final ProductRepository productRepository;
+    private final EventRepository eventRepository;
 
     /**
      * @description GetAllProducts
@@ -56,6 +58,7 @@ public class ProductService {
         log.info("Creating product: {}", request.getProductName());
         Product product = new Product();
         BeanUtils.copyProperties(request, product);
+        product.setStatus(0);
         Product savedProduct = productRepository.save(product);
         log.info("Product created successfully with ID: {}", savedProduct.getProductId());
         return savedProduct;
@@ -69,6 +72,16 @@ public class ProductService {
     @Transactional
     public Product updateProduct(String productId, ProductRequest request) {
         log.info("Updating product with ID: {}", productId);
+        if (request.getStatus() != null && request.getStatus() == 1) {
+            long activeEventCount = eventRepository.countActiveEventsByProductId(productId);
+            if (activeEventCount == 0) {
+                log.warn("Cannot put product on shelf: No active event found for productId: {}", productId);
+                throw new BusinessException(ResultCode.PRODUCT_NO_EVENT);
+            } else if (activeEventCount > 1) {
+                log.error("Data integrity violation: Product {} has {} active events", productId, activeEventCount);
+                throw new BusinessException(ResultCode.PRODUCT_EVENT_DUPLICATED);
+            }
+        }
         Product existingProduct = getProductById(productId);
         BeanUtils.copyProperties(request, existingProduct, BeanCopyUtil.getNullPropertyNames(request));
         Product updatedProduct = productRepository.save(existingProduct);
@@ -84,6 +97,7 @@ public class ProductService {
     @Transactional
     public void deleteProduct(String productId) {
         log.info("Deleting product with ID: {}", productId);
+        eventRepository.deleteByProductId(productId);
         Product product = getProductById(productId);
         productRepository.delete(product);
         log.info("Product deleted successfully: {}", productId);
@@ -96,14 +110,5 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<Product> searchProducts(String productName, Pageable pageable) {
         return productRepository.findByProductNameContaining(productName, pageable);
-    }
-
-    /**
-     * @description Get available products (On shelf and not expired)
-     * @author Yang-Hsu
-     */
-    @Transactional(readOnly = true)
-    public Page<Product> getAvailableProducts(Pageable pageable) {
-        return productRepository.findAvailableProducts(pageable);
     }
 }

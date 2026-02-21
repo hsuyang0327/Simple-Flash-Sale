@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/client/auth/**").permitAll()
                         .requestMatchers("/api/client/open/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 );
         //cors : Allow cross-origin requests from specific sites
