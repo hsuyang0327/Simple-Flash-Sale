@@ -6,6 +6,8 @@ import com.flashsale.backend.dto.request.JobCronRequest;
 import com.flashsale.backend.dto.request.JobRequest;
 import com.flashsale.backend.dto.response.JobResponse;
 import com.flashsale.backend.service.JobService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.util.List;
  * @description JobController
  * @date 2026/2/17 下午1:38
  */
+@Tag(name = "Job Management", description = "Admin APIs for managing scheduled jobs (Quartz).")
 @Slf4j
 @RestController
 @RequestMapping("/api/admin/jobs")
@@ -27,11 +30,7 @@ public class JobController {
 
     private final JobService jobService;
 
-    /**
-     * @description listJobs
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:38
-     */
+    @Operation(summary = "List All Jobs", description = "Retrieves a list of all scheduled jobs and their current status.")
     @GetMapping
     public ResponseEntity<ApiResponse<List<JobResponse>>> listJobs() {
         log.info("API: List all jobs (Admin)");
@@ -39,11 +38,7 @@ public class JobController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, jobs));
     }
 
-    /**
-     * @description pauseJob
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:38
-     */
+    @Operation(summary = "Pause Job", description = "Pauses a specific scheduled job.")
     @PostMapping("/pause")
     public ResponseEntity<ApiResponse<Void>> pauseJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Pause job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
@@ -51,11 +46,7 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description resumeJob
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:38
-     */
+    @Operation(summary = "Resume Job", description = "Resumes a paused scheduled job.")
     @PostMapping("/resume")
     public ResponseEntity<ApiResponse<Void>> resumeJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Resume job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
@@ -63,11 +54,7 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description triggerJob
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:39
-     */
+    @Operation(summary = "Trigger Job", description = "Manually triggers the execution of a specific job immediately.")
     @PostMapping("/trigger")
     public ResponseEntity<ApiResponse<Void>> triggerJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Trigger job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
@@ -75,11 +62,7 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description updateJobCron
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:39
-     */
+    @Operation(summary = "Update Job Cron Schedule", description = "Updates the cron expression for a specific job to change its schedule.")
     @PostMapping("/cron")
     public ResponseEntity<ApiResponse<Void>> updateJobCron(@Valid @RequestBody JobCronRequest request) {
         log.info("API: Update job cron (Admin): {}.{} -> {}", request.getJobGroup(), request.getJobName(), request.getCronExpression());

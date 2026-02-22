@@ -44,12 +44,24 @@ public class OrderConsumer {
     public void processCreateOrder(Order order) {
         log.info("Processing order from MQ for member: {}", order.getMemberId());
         try {
+            // 1. Save the order
             Order savedOrder = orderRepository.save(order);
+
+            // 2. Decrease stock in MySQL
+            int updatedRows = eventRepository.decreaseStock(order.getEventId(), order.getQuantity());
+            if (updatedRows == 0) {
+                // This case should be rare if Redis stock is accurate, but it's a good safeguard.
+                log.error("Failed to decrease MySQL stock for event: {}. Stock might be insufficient.", order.getEventId());
+                // Manually trigger rollback and restore Redis stock
+                throw new IllegalStateException("MySQL stock inconsistency detected.");
+            }
+
+            // 3. Cache order status in Redis
             String memberOrderKey = "member:order:" + savedOrder.getMemberId();
             redisTemplateForOrder.opsForValue().set(memberOrderKey, savedOrder);
             log.info("Order processed and cached in Redis: {}", savedOrder.getOrderId());
 
-            // Send to TTL queue for delayed cancellation check
+            // 4. Send to TTL queue for delayed cancellation check
             rabbitTemplate.convertAndSend(
                     RabbitConfig.ORDER_EXCHANGE,
                     RabbitConfig.TTL_ROUTING_KEY,
@@ -90,8 +102,8 @@ public class OrderConsumer {
                 orderRepository.save(order);
 
                 // 4. Restore Stock
-                redisStockService.increaseStock(order.getProductId(), order.getQuantity());
                 eventRepository.increaseStock(order.getEventId(), order.getQuantity());
+                redisStockService.increaseStock(order.getProductId(), order.getQuantity());
                 log.info("Order {} cancelled and stock restored.", order.getOrderId());
             } else {
                 log.info("Order {} status is {}, no need to cancel.", order.getOrderId(), order.getStatus());

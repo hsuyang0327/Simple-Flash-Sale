@@ -41,6 +41,13 @@ public class SecurityConfig {
         this.objectMapper = objectMapper;
     }
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/swagger-resources"
+    };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -57,6 +64,7 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll() // Allow Swagger
                         .requestMatchers("/api/client/auth/**").permitAll()
                         .requestMatchers("/api/client/open/**").permitAll()
                         .requestMatchers("/api/admin/**").permitAll()

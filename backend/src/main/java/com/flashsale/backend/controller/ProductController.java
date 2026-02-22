@@ -7,6 +7,10 @@ import com.flashsale.backend.dto.response.ProductAdminResponse;
 import com.flashsale.backend.dto.response.ProductClientResponse;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @description ProductController
  * @date 2026/2/8 下午10:46
  */
+@Tag(name = "Product Management", description = "APIs for managing products.")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -30,49 +35,35 @@ public class ProductController {
 
     private final ProductService productService;
 
-    /**
-     * @description Get all products (Client) - Only available products
-     * @author Yang-Hsu
-     * @date 2026/2/8 下午10:47
-     */
+    @Operation(summary = "List Products (Client)", description = "Retrieves a paginated list of available products for clients. This is a public endpoint.")
     @GetMapping("/api/client/open/products")
     public ResponseEntity<ApiResponse<Page<ProductClientResponse>>> listProducts(
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Get all products (Client)");
         Page<Product> products = productService.getAllProducts(pageable);
         Page<ProductClientResponse> response = products.map(this::convertToClientResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
-    /**
-     * @description
-     * @description Get product by ID (Client)
-     * @date 2026/2/8 下午10:47
-     */
+    @Operation(summary = "Get Product (Client)", description = "Retrieves detailed information about a specific product. This is a public endpoint.")
     @GetMapping("/api/client/open/products/{id}")
-    public ResponseEntity<ApiResponse<ProductClientResponse>> getProduct(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<ProductClientResponse>> getProduct(
+            @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Client): {}", id);
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(product)));
     }
 
-    /**
-     * @description Get product by ID (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/8 下午10:47
-     */
+    @Operation(summary = "Get Product (Admin)", description = "Retrieves detailed admin-level information about a specific product. Requires admin privileges.")
     @GetMapping("/api/admin/products/{id}")
-    public ResponseEntity<ApiResponse<ProductAdminResponse>> getProductAdmin(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<ProductAdminResponse>> getProductAdmin(
+            @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Admin): {}", id);
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(product)));
     }
 
-    /**
-     * @description Create product (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/8 下午10:47
-     */
+    @Operation(summary = "Create Product (Admin)", description = "Creates a new product. Requires admin privileges.")
     @PostMapping("/api/admin/products")
     public ResponseEntity<ApiResponse<ProductAdminResponse>> createProduct(@Valid @RequestBody ProductRequest request) {
         log.info("API: Create product (Admin)");
@@ -80,39 +71,30 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(createdProduct)));
     }
 
-    /**
-     * @description
-     * @description Update product (Admin)
-     * @date 2026/2/8 下午10:48
-     */
+    @Operation(summary = "Update Product (Admin)", description = "Updates an existing product. Requires admin privileges.")
     @PutMapping("/api/admin/products/{productId}")
-    public ResponseEntity<ApiResponse<ProductAdminResponse>> updateProduct(@PathVariable String productId, @Valid @RequestBody ProductRequest request) {
+    public ResponseEntity<ApiResponse<ProductAdminResponse>> updateProduct(
+            @Parameter(description = "ID of the product to update") @PathVariable String productId,
+            @Valid @RequestBody ProductRequest request) {
         log.info("API: Update product (Admin): {}", productId);
         Product updatedProduct = productService.updateProduct(productId, request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(updatedProduct)));
     }
 
-    /**
-     * @description Delete product (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/8 下午10:48
-     */
+    @Operation(summary = "Delete Product (Admin)", description = "Deletes a product by its ID. Requires admin privileges.")
     @DeleteMapping("/api/admin/products/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @Parameter(description = "ID of the product to delete") @PathVariable String id) {
         log.info("API: Delete product (Admin): {}", id);
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
 
-    /**
-     * @description
-     * @description Search products by name (Admin)
-     * @date 2026/2/8 下午10:48
-     */
+    @Operation(summary = "Search Products (Admin)", description = "Searches for products by name. Requires admin privileges.")
     @GetMapping("/api/admin/products/search")
     public ResponseEntity<ApiResponse<Page<ProductAdminResponse>>> searchProducts(
-            @RequestParam String productName,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @Parameter(description = "The name of the product to search for") @RequestParam String productName,
+            @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Search products (Admin): {}", productName);
         Page<Product> products = productService.searchProducts(productName, pageable);
         Page<ProductAdminResponse> response = products.map(this::convertToAdminResponse);

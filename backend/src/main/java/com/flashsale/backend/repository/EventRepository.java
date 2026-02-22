@@ -31,8 +31,9 @@ public interface EventRepository extends JpaRepository<Event, String> {
     int decreaseStock(@Param("id") String id, @Param("qty") Integer qty);
 
     /**
-     * @description increaseStock for order cancel
+     * @description
      * @author Yang-Hsu
+     * @date 2026/2/22 上午2:36
      */
     @Modifying
     @Transactional
