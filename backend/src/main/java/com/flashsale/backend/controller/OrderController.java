@@ -15,7 +15,6 @@ import com.flashsale.backend.service.OrderService;
 import com.flashsale.backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,8 +41,7 @@ public class OrderController {
     private final MemberService memberService;
     private final ProductService productService;
 
-    @Operation(summary = "Create Order (Client)", description = "Creates a new order for a flash sale event. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create Order (Client)", description = "Creates a new order for a flash sale event. Requires JWT authentication.")
     @PostMapping("/api/client/orders")
     public ResponseEntity<ApiResponse<OrderClientResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
@@ -53,8 +51,7 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    @Operation(summary = "Update Order (Client)", description = "Updates an existing order. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update Order (Client)", description = "Updates an existing order. Requires JWT authentication.")
     @PutMapping("/api/client/orders/{id}")
     public ResponseEntity<ApiResponse<OrderClientResponse>> updateOrder(
             @Parameter(description = "ID of the order to update") @PathVariable String id,
@@ -67,8 +64,7 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    @Operation(summary = "Get Order (Client)", description = "Retrieves details of a specific order for the authenticated user. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get Order (Client)", description = "Retrieves details of a specific order for the authenticated user. Requires JWT authentication.")
     @GetMapping("/api/client/orders/{id}")
     public ResponseEntity<ApiResponse<OrderClientResponse>> getOrder(
             @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
@@ -79,8 +75,7 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    @Operation(summary = "Get Order Status (Client)", description = "Checks the status of an order creation process from Redis. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get Order Status (Client)", description = "Checks the status of an order creation process from Redis. Requires JWT authentication.")
     @GetMapping("/api/client/orders/status/{memberId}")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> getOrderStatus(
             @Parameter(description = "ID of the member whose order status is to be checked") @PathVariable String memberId) {
