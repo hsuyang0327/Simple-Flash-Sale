@@ -137,9 +137,8 @@ public class OrderService {
             rabbitTemplate.convertAndSend(RabbitConfig.ORDER_EXCHANGE, RabbitConfig.ORDER_ROUTING_KEY, order);
             log.info("Order request sent to queue for member: {}", request.getMemberId());
         } catch (Exception e) {
-            log.error("Failed to send order to MQ", e);
-            String stockKey = "productId:" + event.getProduct().getProductId();
-            redisTemplateForStock.opsForHash().increment(stockKey, "stock", request.getQuantity());
+            log.error("Failed to send order to MQ, restoring Redis stock.", e);
+            redisStockService.increaseStock(event.getProduct().getProductId(), request.getQuantity());
             throw new BusinessException(ResultCode.SYSTEM_ERROR);
         }
         return order;
