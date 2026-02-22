@@ -8,7 +8,6 @@ import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +32,7 @@ public class PaymentController {
 
     private final OrderService orderService;
 
-    @Operation(summary = "Process Payment", description = "Simulates the payment process for an order, changing its status from PENDING to PAID. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Process Payment", description = "Simulates the payment process for an order, changing its status from PENDING to PAID. Requires JWT authentication.")
     @PostMapping("/pay")
     public ResponseEntity<ApiResponse<OrderClientResponse>> payOrder(@Valid @RequestBody PaymentRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();

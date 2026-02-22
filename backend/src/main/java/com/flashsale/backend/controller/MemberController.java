@@ -10,7 +10,6 @@ import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +43,7 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(saved)));
     }
 
-    @Operation(summary = "Get Member Profile", description = "Retrieves the profile of the currently authenticated user. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get Member Profile", description = "Retrieves the profile of the currently authenticated user. Requires JWT authentication.")
     @GetMapping("/api/client/member/{id}")
     public ResponseEntity<ApiResponse<MemberResponse>> profile(
             @Parameter(description = "ID of the member to retrieve") @PathVariable String id) {
@@ -56,8 +54,7 @@ public class MemberController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(member)));
     }
 
-    @Operation(summary = "Update Member Profile", description = "Updates the profile of the currently authenticated user. Requires JWT authentication.",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update Member Profile", description = "Updates the profile of the currently authenticated user. Requires JWT authentication.")
     @PutMapping("/api/client/member/{id}")
     public ResponseEntity<ApiResponse<MemberResponse>> modify(
             @Parameter(description = "ID of the member to update") @PathVariable String id,
