@@ -3,6 +3,9 @@ package com.flashsale.backend.controller;
 import com.flashsale.backend.common.ApiResponse;
 import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.entity.Order;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Tag(name = "Redis Data Access", description = "APIs for directly accessing Redis data, such as preheated products and cached order status.")
 @RestController
 @RequestMapping("/api/client/open/redis")
 @RequiredArgsConstructor
@@ -33,13 +37,10 @@ public class RedisController {
 
     private static final String PREHEATED_PRODUCT_KEYS = "preheated_product_keys";
 
-    /**
-     * @description Get preheated products
-     * @author Yang-Hsu
-     * @date 2026/2/21 下午4:28
-     */
+    @Operation(summary = "Get Preheated Products", description = "Retrieves a paginated list of products that have been preheated into Redis cache.")
     @GetMapping("/preheated-products")
-    public ResponseEntity<ApiResponse<Page<Map<Object, Object>>>> getPreheatedProducts(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<Map<Object, Object>>>> getPreheatedProducts(
+            @Parameter(description = "Pagination information") Pageable pageable) {
         long start = pageable.getOffset();
         long end = start + pageable.getPageSize() - 1;
         Long total = redisTemplateForStock.opsForList().size(PREHEATED_PRODUCT_KEYS);
@@ -57,13 +58,10 @@ public class RedisController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, page));
     }
 
-    /**
-     * @description Get order status
-     * @author Yang-Hsu
-     * @date 2026/2/21 下午4:28
-     */
+    @Operation(summary = "Get Order Status (Redis)", description = "Checks the status of an order directly from Redis cache using the member ID.")
     @GetMapping("/order-status/{memberId}")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderStatus(@PathVariable String memberId) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderStatus(
+            @Parameter(description = "ID of the member whose order status is to be checked") @PathVariable String memberId) {
         String orderKey = "member:order:" + memberId;
         Order order = (Order) redisTemplateForOrder.opsForValue().get(orderKey);
 

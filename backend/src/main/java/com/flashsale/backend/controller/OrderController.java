@@ -13,6 +13,10 @@ import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.MemberService;
 import com.flashsale.backend.service.OrderService;
 import com.flashsale.backend.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
  * @description OrderController
  * @date 2026/2/12 下午9:43
  */
+@Tag(name = "Order Management", description = "APIs for creating, viewing, and managing orders.")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -37,11 +42,8 @@ public class OrderController {
     private final MemberService memberService;
     private final ProductService productService;
 
-    /**
-     * @description Create order (Client)
-     * @author Yang-Hsu
-     * @date 2026/2/19 下午8:27
-     */
+    @Operation(summary = "Create Order (Client)", description = "Creates a new order for a flash sale event. Requires JWT authentication.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/api/client/orders")
     public ResponseEntity<ApiResponse<OrderClientResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
@@ -51,13 +53,12 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    /**
-     * @description Update Order (Client)
-     * @author Yang-Hsu
-     * @date 2026/2/12 下午9:44
-     */
+    @Operation(summary = "Update Order (Client)", description = "Updates an existing order. Requires JWT authentication.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/api/client/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> updateOrder(@PathVariable String id, @Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<ApiResponse<OrderClientResponse>> updateOrder(
+            @Parameter(description = "ID of the order to update") @PathVariable String id,
+            @Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
         log.info("API: Update order (Client): orderId={}, memberId={}", id, memberId);
@@ -66,13 +67,11 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    /**
-     * @description Get Order by ID (Client)
-     * @author Yang-Hsu
-     * @date 2026/2/12 下午9:44
-     */
+    @Operation(summary = "Get Order (Client)", description = "Retrieves details of a specific order for the authenticated user. Requires JWT authentication.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/api/client/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> getOrder(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<OrderClientResponse>> getOrder(
+            @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
         log.info("API: Get order (Client): orderId={}, memberId={}", id, memberId);
@@ -80,13 +79,11 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    /**
-     * @description
-     * @author Yang-Hsu
-     * @date 2026/2/20 下午6:59
-     */
+    @Operation(summary = "Get Order Status (Client)", description = "Checks the status of an order creation process from Redis. Requires JWT authentication.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/api/client/orders/status/{memberId}")
-    public ResponseEntity<ApiResponse<OrderStatusResponse>> getOrderStatus(@PathVariable String memberId) {
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> getOrderStatus(
+            @Parameter(description = "ID of the member whose order status is to be checked") @PathVariable String memberId) {
         String currentUserId = SecurityUtils.getCurrentUserId();
         log.info("API: Get order status for memberId: {}", currentUserId);
         OrderStatusResponse response = orderService.getOrderStatusFromRedis(memberId);
@@ -94,16 +91,12 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
-    /**
-     * @description Search Orders (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/12 下午9:44
-     */
+    @Operation(summary = "Search Orders (Admin)", description = "Searches and retrieves a paginated list of orders based on product or member name. Requires admin privileges.")
     @GetMapping("/api/admin/orders")
     public ResponseEntity<ApiResponse<Page<OrderAdminResponse>>> searchOrders(
-            @RequestParam(required = false) String productName,
-            @RequestParam(required = false) String memberName,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @Parameter(description = "Filter by product name (optional)") @RequestParam(required = false) String productName,
+            @Parameter(description = "Filter by member name (optional)") @RequestParam(required = false) String memberName,
+            @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Search orders (Admin): productName={}, memberName={}", productName, memberName);
 
         Page<Order> orders = orderService.searchOrders(productName, memberName, pageable);
@@ -111,13 +104,10 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
-    /**
-     * @description Get Order by ID (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/12 下午9:44
-     */
+    @Operation(summary = "Get Order (Admin)", description = "Retrieves detailed information about a specific order by its ID. Requires admin privileges.")
     @GetMapping("/api/admin/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderAdminResponse>> getOrderAdmin(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<OrderAdminResponse>> getOrderAdmin(
+            @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         log.info("API: Get order (Admin): orderId={}", id);
 
         Order order = orderService.getOrderByIdAdmin(id);

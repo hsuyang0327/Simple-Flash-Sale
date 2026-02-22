@@ -7,6 +7,9 @@ import com.flashsale.backend.dto.response.OrderClientResponse;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Yang-Hsu
  * @date 2026/2/20 下午7:19
  */
+@Tag(name = "Payment", description = "APIs for processing order payments.")
 @Slf4j
 @RestController
 @RequestMapping("/api/client/payment")
@@ -29,11 +33,8 @@ public class PaymentController {
 
     private final OrderService orderService;
 
-    /**
-     * @description
-     * @author Yang-Hsu
-     * @date 2026/2/20 下午7:19
-     */
+    @Operation(summary = "Process Payment", description = "Simulates the payment process for an order, changing its status from PENDING to PAID. Requires JWT authentication.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/pay")
     public ResponseEntity<ApiResponse<OrderClientResponse>> payOrder(@Valid @RequestBody PaymentRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
