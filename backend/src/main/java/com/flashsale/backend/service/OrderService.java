@@ -4,22 +4,15 @@ import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.config.RabbitConfig;
 import com.flashsale.backend.dto.request.OrderRequest;
 import com.flashsale.backend.dto.request.PaymentRequest;
-import com.flashsale.backend.dto.response.OrderAdminResponse;
-import com.flashsale.backend.dto.response.OrderClientResponse;
+import com.flashsale.backend.dto.response.OrderClientDetailResponse;
 import com.flashsale.backend.dto.response.OrderStatusResponse;
 import com.flashsale.backend.entity.Event;
-import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.entity.Order;
-import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.EventRepository;
-import com.flashsale.backend.repository.MemberRepository;
 import com.flashsale.backend.repository.OrderRepository;
-import com.flashsale.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -42,17 +35,10 @@ import java.math.BigDecimal;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
-    private final MemberRepository memberRepository;
     private final EventRepository eventRepository;
     private final RedisStockService redisStockService;
-
-    @Qualifier("redisTemplateDb0")
-    private final RedisTemplate<String, Object> redisTemplateForStock;
-
     @Qualifier("redisTemplateDb1")
     private final RedisTemplate<String, Object> redisTemplateForOrder;
-
     private final RabbitTemplate rabbitTemplate;
 
     /**
@@ -145,8 +131,9 @@ public class OrderService {
     }
 
     /**
-     * @description Get Order Status from Redis
+     * @description
      * @author Yang-Hsu
+     * @date 2026/2/23 上午12:29
      */
     public OrderStatusResponse getOrderStatusFromRedis(String memberId) {
         String orderKey = "member:order:" + memberId;
@@ -192,30 +179,17 @@ public class OrderService {
     }
 
     /**
-     * @description Get Order by ID (Client)
+     * @description
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:30
+     * @date 2026/2/23 下午1:41
      */
-    @Transactional(readOnly = true)
-    public Order getOrderById(String memberId, String orderId) {
-        Order order = orderRepository.findById(orderId)
+    public Order getOrderDetailsByIdClient(String memberId, String orderId) {
+        Order order = orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
-
         if (!order.getMemberId().equals(memberId)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
         return order;
-    }
-
-    /**
-     * @description Get Order by ID (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/17 下午1:31
-     */
-    @Transactional(readOnly = true)
-    public Order getOrderByIdAdmin(String orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
     }
 
     /**
@@ -255,34 +229,24 @@ public class OrderService {
         return savedOrder;
     }
 
-    public OrderClientResponse convertToClientResponse(Order order) {
-        Product product = productRepository.findById(order.getProductId()).orElse(null);
-        String productName = product != null ? product.getProductName() : "Unknown";
-
-        return OrderClientResponse.builder()
-                .orderId(order.getOrderId())
-                .productName(productName)
-                .quantity(order.getQuantity())
-                .totalPrice(order.getTotalPrice())
-                .status(order.getStatus())
-                .createdAt(order.getCreatedAt())
-                .build();
+    /**
+     * @description getOrderDetailsByIdAdmin
+     * @author Yang-Hsu
+     * @date 2026/2/23 上午12:43
+     */
+    public Order getOrderDetailsByIdAdmin(String orderId) {
+        return orderRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
     }
 
-    public OrderAdminResponse convertToAdminResponse(Order order) {
-        Product product = productRepository.findById(order.getProductId()).orElse(null);
-        Member member = memberRepository.findById(order.getMemberId()).orElse(null);
-        return OrderAdminResponse.builder()
+    public OrderClientDetailResponse convertToClientResponse(Order order) {
+        return OrderClientDetailResponse.builder()
                 .orderId(order.getOrderId())
-                .memberId(order.getMemberId())
-                .memberName(member != null ? member.getMemberName() : "Unknown")
                 .productId(order.getProductId())
-                .productName(product != null ? product.getProductName() : "Unknown")
                 .quantity(order.getQuantity())
                 .totalPrice(order.getTotalPrice())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
                 .build();
     }
 

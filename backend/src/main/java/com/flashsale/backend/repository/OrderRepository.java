@@ -23,17 +23,16 @@ public interface OrderRepository extends JpaRepository<Order, String> {
      * @author Yang-Hsu
      * @date 2026/2/12 下午9:53
      */
-    @Query(value = "SELECT o.* FROM orders o " +
-            "LEFT JOIN member m ON o.member_id = m.member_id " +
-            "LEFT JOIN product p ON o.product_id = p.product_id " +
-            "WHERE (:productName IS NULL OR p.product_name LIKE CONCAT('%', :productName, '%')) " +
-            "AND (:memberName IS NULL OR m.member_name LIKE CONCAT('%', :memberName, '%'))",
-            countQuery = "SELECT count(*) FROM orders o " +
-                    "LEFT JOIN member m ON o.member_id = m.member_id " +
-                    "WHERE (:productName IS NULL OR p.product_name LIKE CONCAT('%', :productName, '%')) " +
-                    "AND (:memberName IS NULL OR m.member_name LIKE CONCAT('%', :memberName, '%'))",
-            nativeQuery = true)
-    Page<Order> searchOrders(@Param("productName") String productName, @Param("memberName") String memberName, Pageable pageable);
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.member m " +
+            "LEFT JOIN FETCH o.product p " +
+            "WHERE (:productName IS NULL OR :productName = '' OR p.productName LIKE %:productName%) " +
+            "AND (:memberName IS NULL OR :memberName = '' OR m.memberName LIKE %:memberName%)")
+    Page<Order> searchOrders(
+            @Param("productName") String productName,
+            @Param("memberName") String memberName,
+            Pageable pageable
+    );
 
     /**
      * @description findByIdForUpdate
@@ -43,4 +42,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.orderId = :orderId")
     Optional<Order> findByIdForUpdate(@Param("orderId") String orderId);
+
+    /**
+     * @description findByIdWithDetails
+     * @author Yang-Hsu
+     * @date 2026/2/23 上午12:43
+     */
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.member " +
+            "LEFT JOIN FETCH o.product " +
+            "WHERE o.orderId = :id")
+    Optional<Order> findByIdWithDetails(@Param("id") String id);
 }

@@ -4,15 +4,13 @@ import com.flashsale.backend.common.ApiResponse;
 import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.OrderRequest;
 import com.flashsale.backend.dto.response.OrderAdminResponse;
-import com.flashsale.backend.dto.response.OrderClientResponse;
+import com.flashsale.backend.dto.response.OrderClientDetailResponse;
 import com.flashsale.backend.dto.response.OrderStatusResponse;
 import com.flashsale.backend.entity.Member;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.security.SecurityUtils;
-import com.flashsale.backend.service.MemberService;
 import com.flashsale.backend.service.OrderService;
-import com.flashsale.backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,12 +36,10 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
-    private final MemberService memberService;
-    private final ProductService productService;
 
     @Operation(summary = "Create Order (Client)", description = "Creates a new order for a flash sale event. Requires JWT authentication.")
     @PostMapping("/api/client/orders")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
         log.info("API: Create order (Client): memberId={}", memberId);
@@ -53,26 +49,25 @@ public class OrderController {
 
     @Operation(summary = "Update Order (Client)", description = "Updates an existing order. Requires JWT authentication.")
     @PutMapping("/api/client/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> updateOrder(
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> updateOrder(
             @Parameter(description = "ID of the order to update") @PathVariable String id,
             @Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
         log.info("API: Update order (Client): orderId={}, memberId={}", id, memberId);
-
         Order order = orderService.updateOrder(id, request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
     @Operation(summary = "Get Order (Client)", description = "Retrieves details of a specific order for the authenticated user. Requires JWT authentication.")
     @GetMapping("/api/client/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> getOrder(
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> getOrder(
             @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
         log.info("API: Get order (Client): orderId={}, memberId={}", id, memberId);
-        Order order = orderService.getOrderById(memberId, id);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
+        Order order = orderService.getOrderDetailsByIdClient(memberId, id);
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientDetailResponse(order)));
     }
 
     @Operation(summary = "Get Order Status (Client)", description = "Checks the status of an order creation process from Redis. Requires JWT authentication.")
@@ -82,7 +77,6 @@ public class OrderController {
         String currentUserId = SecurityUtils.getCurrentUserId();
         log.info("API: Get order status for memberId: {}", currentUserId);
         OrderStatusResponse response = orderService.getOrderStatusFromRedis(memberId);
-
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
@@ -93,9 +87,8 @@ public class OrderController {
             @Parameter(description = "Filter by member name (optional)") @RequestParam(required = false) String memberName,
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Search orders (Admin): productName={}, memberName={}", productName, memberName);
-
         Page<Order> orders = orderService.searchOrders(productName, memberName, pageable);
-        Page<OrderAdminResponse> response = orders.map(orderService::convertToAdminResponse);
+        Page<OrderAdminResponse> response = orders.map(this::convertToAdminResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
@@ -105,17 +98,27 @@ public class OrderController {
             @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         log.info("API: Get order (Admin): orderId={}", id);
 
-        Order order = orderService.getOrderByIdAdmin(id);
+        Order order = orderService.getOrderDetailsByIdAdmin(id);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(order)));
     }
 
-    public OrderClientResponse convertToClientResponse(Order order) {
-        Product product = productService.getProductById(order.getProductId());
-        String productName = product != null ? product.getProductName() : "Unknown";
-
-        return OrderClientResponse.builder()
+    public OrderClientDetailResponse convertToClientResponse(Order order) {
+        return OrderClientDetailResponse.builder()
                 .orderId(order.getOrderId())
-                .productName(productName)
+                .productId(order.getProductId())
+                .quantity(order.getQuantity())
+                .totalPrice(order.getTotalPrice())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .build();
+    }
+
+    public OrderClientDetailResponse convertToClientDetailResponse(Order order) {
+        Product product = order.getProduct();
+        return OrderClientDetailResponse.builder()
+                .orderId(order.getOrderId())
+                .productId(product != null ? product.getProductId() : null)
+                .productName(product != null ? product.getProductName() : "Unknown")
                 .quantity(order.getQuantity())
                 .totalPrice(order.getTotalPrice())
                 .status(order.getStatus())
@@ -124,14 +127,13 @@ public class OrderController {
     }
 
     public OrderAdminResponse convertToAdminResponse(Order order) {
-        Product product = productService.getProductById(order.getProductId());
-        Member member = memberService.getMemberById(order.getMemberId());
-
+        Member member = order.getMember();
+        Product product = order.getProduct();
         return OrderAdminResponse.builder()
                 .orderId(order.getOrderId())
-                .memberId(order.getMemberId())
+                .memberId(member != null ? member.getMemberId() : null)
                 .memberName(member != null ? member.getMemberName() : "Unknown")
-                .productId(order.getProductId())
+                .productId(product != null ? product.getProductId() : null)
                 .productName(product != null ? product.getProductName() : "Unknown")
                 .quantity(order.getQuantity())
                 .totalPrice(order.getTotalPrice())

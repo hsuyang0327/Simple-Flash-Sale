@@ -7,15 +7,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
+ * @description OrderClientDetailResponse
  * @author Yang-Hsu
- * @description OrderClientResponse
  * @date 2026/2/23 下午1:49
  */
 @Data
 @Builder
-public class OrderClientResponse {
+public class OrderClientDetailResponse {
     private String orderId;
     private String productId;
+    private String productName;
     private Integer quantity;
     private BigDecimal totalPrice;
     private String status;
