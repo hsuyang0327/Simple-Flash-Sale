@@ -3,7 +3,7 @@ package com.flashsale.backend.controller;
 import com.flashsale.backend.common.ApiResponse;
 import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.OrderRequest;
-import com.flashsale.backend.dto.response.OrderClientResponse;
+import com.flashsale.backend.dto.response.OrderClientDetailResponse;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.service.OrderService;
 import jakarta.validation.Valid;
@@ -26,14 +26,14 @@ public class TestController {
     }
 
     @PostMapping("/ordersDB")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> createOrderDB(@Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> createOrderDB(@Valid @RequestBody OrderRequest request) {
         log.info("API: Create ordersDB (Client): memberId={}", request.getMemberId());
         Order order = orderService.createOrderDB(request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, orderService.convertToClientResponse(order)));
     }
 
     @PostMapping("/ordersRedis")
-    public ResponseEntity<ApiResponse<OrderClientResponse>> createOrderRedis(@Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> createOrderRedis(@Valid @RequestBody OrderRequest request) {
         log.info("API: Create order (Client): memberId={}", request.getMemberId());
         Order order = orderService.createOrderRedis(request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, orderService.convertToClientResponse(order)));

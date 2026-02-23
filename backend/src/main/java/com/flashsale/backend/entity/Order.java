@@ -8,8 +8,8 @@ import java.io.Serial;
 import java.math.BigDecimal;
 
 /**
- * @description Order
  * @author Yang-Hsu
+ * @description Order
  * @date 2026/2/17 下午1:34
  */
 @Data
@@ -46,4 +46,16 @@ public class Order extends BaseEntity {
 
     @Version
     private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", insertable = false, updatable = false)
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "event_id", insertable = false, updatable = false)
+    private Event event;
 }
