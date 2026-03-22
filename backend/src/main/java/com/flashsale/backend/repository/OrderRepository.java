@@ -19,22 +19,6 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, String> {
 
     /**
-     * @description Search Orders (Admin)
-     * @author Yang-Hsu
-     * @date 2026/2/12 下午9:53
-     */
-    @Query("SELECT o FROM Order o " +
-            "LEFT JOIN FETCH o.member m " +
-            "LEFT JOIN FETCH o.product p " +
-            "WHERE (:productName IS NULL OR :productName = '' OR p.productName LIKE %:productName%) " +
-            "AND (:memberName IS NULL OR :memberName = '' OR m.memberName LIKE %:memberName%)")
-    Page<Order> searchOrders(
-            @Param("productName") String productName,
-            @Param("memberName") String memberName,
-            Pageable pageable
-    );
-
-    /**
      * @description findByIdForUpdate
      * @author Yang-Hsu
      * @date 2026/2/20 下午11:41
@@ -53,4 +37,34 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             "LEFT JOIN FETCH o.product " +
             "WHERE o.orderId = :id")
     Optional<Order> findByIdWithDetails(@Param("id") String id);
+
+    @Query(value = "SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.member " +
+            "LEFT JOIN FETCH o.product " +
+            "WHERE o.memberId = :memberId",
+            countQuery = "SELECT COUNT(o) FROM Order o WHERE o.memberId = :memberId")
+    Page<Order> findByMemberIdWithDetails(@Param("memberId") String memberId, Pageable pageable);
+
+    @Query(value = "SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.member " +
+            "LEFT JOIN FETCH o.product " +
+            "WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED')",
+            countQuery = "SELECT COUNT(o) FROM Order o WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED')")
+    Page<Order> findByMemberIdExcludingPending(@Param("memberId") String memberId, Pageable pageable);
+
+    /**
+     * @description Search Orders (Admin)
+     * @author Yang-Hsu
+     * @date 2026/2/12 下午9:53
+     */
+    @Query("SELECT o FROM Order o " +
+            "LEFT JOIN FETCH o.member m " +
+            "LEFT JOIN FETCH o.product p " +
+            "WHERE (:productName IS NULL OR :productName = '' OR p.productName LIKE %:productName%) " +
+            "AND (:memberName IS NULL OR :memberName = '' OR m.memberName LIKE %:memberName%)")
+    Page<Order> searchOrders(
+            @Param("productName") String productName,
+            @Param("memberName") String memberName,
+            Pageable pageable
+    );
 }

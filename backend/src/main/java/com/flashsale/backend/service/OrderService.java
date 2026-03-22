@@ -14,11 +14,8 @@ import com.flashsale.backend.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,12 +34,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final EventRepository eventRepository;
     private final RedisStockService redisStockService;
-    @Qualifier("redisTemplateDb1")
-    private final RedisTemplate<String, Object> redisTemplateForOrder;
+    private final RedisOrderService redisOrderService;
     private final RabbitTemplate rabbitTemplate;
 
     /**
-     * @description Create Order (Client)
+     * @description Create Order directly to DB — dev/test only, bypasses Redis and MQ.
      * @author Yang-Hsu
      * @date 2026/2/17 下午1:26
      */
@@ -71,7 +67,7 @@ public class OrderService {
     }
 
     /**
-     * @description Create Order (Redis)
+     * @description Create Order via Redis stock deduct then direct DB write — dev/test only, bypasses MQ.
      * @author Yang-Hsu
      * @date 2026/2/17 下午1:28
      */
@@ -135,9 +131,8 @@ public class OrderService {
      * @author Yang-Hsu
      * @date 2026/2/23 上午12:29
      */
-    public OrderStatusResponse getOrderStatusFromRedis(String memberId) {
-        String orderKey = "member:order:" + memberId;
-        Order order = (Order) redisTemplateForOrder.opsForValue().get(orderKey);
+    public OrderStatusResponse getOrderStatusFromRedis(String memberId, String eventId) {
+        Order order = redisOrderService.getOrderCache(memberId, eventId);
 
         if (order != null) {
             return OrderStatusResponse.builder()
@@ -152,30 +147,38 @@ public class OrderService {
     }
 
     /**
-     * @description Update Order (Client)
+     * @description Cancel Order (Client) - 取消訂單並回滾庫存
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:28
      */
     @Transactional
-    public Order updateOrder(String orderId, OrderRequest request) {
-        log.info("Updating order: {}", orderId);
-        Order order = orderRepository.findById(orderId)
+    public Order cancelOrder(String orderId, String memberId) {
+        log.info("Cancelling order: {}, memberId: {}", orderId, memberId);
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
-        if (!order.getMemberId().equals(request.getMemberId())) {
+        if (!order.getMemberId().equals(memberId)) {
             throw new BusinessException(ResultCode.TOKEN_INVALID);
         }
-        order.setQuantity(request.getQuantity());
-        Event event = eventRepository.findById(order.getEventId())
-                .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
-        order.setTotalPrice(event.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
-        try {
-            Order updatedOrder = orderRepository.save(order);
-            log.info("Order updated successfully: {}", orderId);
-            return updatedOrder;
-        } catch (ObjectOptimisticLockingFailureException e) {
-            log.warn("Update order failed due to concurrent modification: {}", orderId);
-            throw new BusinessException(ResultCode.ORDER_IS_UPDATED_BY_OTHERS);
+        if (!"PAID".equals(order.getStatus())) {
+            throw new BusinessException(ResultCode.ORDER_STATUS_INVALID);
         }
+        order.setStatus("CANCELLED");
+        Order savedOrder = orderRepository.save(order);
+        // 回滾 MySQL 庫存
+        eventRepository.increaseStock(order.getEventId(), order.getQuantity());
+        // 回滾 Redis 庫存
+        redisStockService.increaseStock(order.getProductId(), order.getQuantity());
+        log.info("Order {} cancelled and stock restored.", orderId);
+        return savedOrder;
+    }
+
+    /**
+     * @description Get My Orders (Client)
+     * @author Yang-Hsu
+     * @date 2026/3/28
+     */
+    @Transactional(readOnly = true)
+    public Page<Order> getOrdersByMemberId(String memberId, Pageable pageable) {
+        return orderRepository.findByMemberIdExcludingPending(memberId, pageable);
     }
 
     /**

@@ -26,7 +26,7 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${flashsale.jwt.secret}")
+    @Value("${flashsale.jwt.secret}") //Need to use env to set in prod, for dev can set in application.properties
     private String jwtSecret;
 
     @Value("${flashsale.jwt.accessExpirationMs:900000}") //15 min
@@ -35,7 +35,7 @@ public class JwtUtils {
     @Value("${flashsale.jwt.refreshExpirationMs:3600000}") // 1 hour
     private long refreshExpirationMs;
 
-    @Value("${flashsale.jwt.cookieSecure:false}") // Default false for dev, set true in prod
+    @Value("${flashsale.jwt.cookieSecure:false}") // Default false for dev, set true in prod (need to notice)
     private boolean cookieSecure;
 
     private SecretKey key;
@@ -71,6 +71,8 @@ public class JwtUtils {
      * @date 2026/1/8 下午 03:49
      */
     public ResponseCookie generateAccessResponseCookie(String jwt) {
+        // access_token is intentionally a session cookie (no maxAge) — expires when browser closes.
+        // The frontend detects 4004 (TOKEN_MISSING) and silently refreshes using refresh_token.
         return ResponseCookie.from("access_token", jwt).path("/").httpOnly(true)
                 .secure(cookieSecure)
                 .sameSite("Lax")

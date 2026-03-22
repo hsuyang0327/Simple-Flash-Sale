@@ -41,22 +41,31 @@ public class JobService {
                 JobDetail jobDetail = scheduler.getJobDetail(jobKey);
                 List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
 
-                for (Trigger trigger : triggers) {
-                    Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
-                    String cronExpression = "";
-                    if (trigger instanceof CronTrigger cronTrigger) {
-                        cronExpression = cronTrigger.getCronExpression();
-                    }
-
+                // 如果沒有 Trigger，也應該要把 Job 資訊加進去
+                if (triggers.isEmpty()) {
                     jobList.add(JobResponse.builder()
                             .jobName(jobKey.getName())
                             .jobGroup(jobKey.getGroup())
-                            .jobStatus(triggerState.name())
-                            .cronExpression(cronExpression)
-                            .previousFireTime(toLocalDateTime(trigger.getPreviousFireTime()))
-                            .nextFireTime(toLocalDateTime(trigger.getNextFireTime()))
+                            .jobStatus("REGISTERED") // 標記為僅註冊
                             .description(jobDetail.getDescription())
                             .build());
+                } else {
+                    // 如果有 Trigger，則列出各個 Trigger 的狀態
+                    for (Trigger trigger : triggers) {
+                        Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
+                        String cronExpression = (trigger instanceof CronTrigger cronTrigger)
+                                ? cronTrigger.getCronExpression() : "";
+
+                        jobList.add(JobResponse.builder()
+                                .jobName(jobKey.getName())
+                                .jobGroup(jobKey.getGroup())
+                                .jobStatus(triggerState.name())
+                                .cronExpression(cronExpression)
+                                .previousFireTime(toLocalDateTime(trigger.getPreviousFireTime()))
+                                .nextFireTime(toLocalDateTime(trigger.getNextFireTime()))
+                                .description(jobDetail.getDescription())
+                                .build());
+                    }
                 }
             }
         } catch (SchedulerException e) {

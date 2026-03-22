@@ -44,24 +44,23 @@ public class MemberController {
     }
 
     @Operation(summary = "Get Member Profile", description = "Retrieves the profile of the currently authenticated user. Requires JWT authentication.")
-    @GetMapping("/api/client/member/{id}")
-    public ResponseEntity<ApiResponse<MemberResponse>> profile(
-            @Parameter(description = "ID of the member to retrieve") @PathVariable String id) {
-        log.info("API: Get member profile (Client): {}", id);
-        SecurityUtils.checkPermission(id);
-        Member member = memberService.getMemberById(id);
-
+    @GetMapping("/api/client/member/me")
+    public ResponseEntity<ApiResponse<MemberResponse>> profile() {
+        String memberId = SecurityUtils.getCurrentUserId();
+        SecurityUtils.checkPermission(memberId);
+        log.info("API: Get member profile (Client): {}", memberId);
+        Member member = memberService.getMemberById(memberId);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(member)));
     }
 
     @Operation(summary = "Update Member Profile", description = "Updates the profile of the currently authenticated user. Requires JWT authentication.")
-    @PutMapping("/api/client/member/{id}")
+    @PutMapping("/api/client/member/me")
     public ResponseEntity<ApiResponse<MemberResponse>> modify(
-            @Parameter(description = "ID of the member to update") @PathVariable String id,
             @RequestBody MemberUpdateRequest req) {
-        log.info("API: Modify member (Client): {}", id);
-        SecurityUtils.checkPermission(id);
-        Member updatedMember = memberService.updateMember(id, req);
+        String memberId = SecurityUtils.getCurrentUserId();
+        SecurityUtils.checkPermission(memberId);
+        log.info("API: Modify member (Client): {}", memberId);
+        Member updatedMember = memberService.updateMember(memberId, req);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(updatedMember)));
     }
 

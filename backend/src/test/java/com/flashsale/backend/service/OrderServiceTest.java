@@ -8,6 +8,7 @@ import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
 import com.flashsale.backend.repository.EventRepository;
+import com.flashsale.backend.repository.OrderRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,8 +17,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,7 +44,13 @@ class OrderServiceTest {
     private EventRepository eventRepository;
 
     @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
     private RedisStockService redisStockService;
+
+    @Mock
+    private RedisOrderService redisOrderService;
 
     @Mock
     private RabbitTemplate rabbitTemplate;
@@ -62,12 +74,14 @@ class OrderServiceTest {
 
         Product product = new Product();
         product.setProductId(productId);
-        
+
         Event event = new Event();
         event.setEventId(eventId);
         event.setProduct(product);
         event.setPrice(new BigDecimal("100"));
 
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(true);
 
         Order result = orderService.createOrder(request); // create order action
 
@@ -145,5 +159,59 @@ class OrderServiceTest {
         assertEquals(ResultCode.SYSTEM_ERROR, exception.getResultCode());
 
         verify(redisStockService, times(1)).increaseStock(productId, quantity);
+    }
+
+    @Test
+    @DisplayName("查詢自己的訂單列表成功 - 依 memberId 分頁")
+    void getOrdersByMemberId_Success() {
+        String memberId = UUID.randomUUID().toString();
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Order order = new Order();
+        order.setOrderId(UUID.randomUUID().toString());
+        order.setMemberId(memberId);
+        Page<Order> expectedPage = new PageImpl<>(List.of(order), pageable, 1);
+
+        when(orderRepository.findByMemberIdExcludingPending(memberId, pageable)).thenReturn(expectedPage);
+
+        Page<Order> result = orderService.getOrdersByMemberId(memberId, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        assertEquals(memberId, result.getContent().get(0).getMemberId());
+        verify(orderRepository, times(1)).findByMemberIdExcludingPending(memberId, pageable);
+    }
+
+    @Test
+    @DisplayName("查詢下單狀態成功 - Redis 有訂單資料")
+    void getOrderStatusFromRedis_Success() {
+        String memberId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString();
+        Order order = new Order();
+        order.setOrderId(UUID.randomUUID().toString());
+        order.setMemberId(memberId);
+
+        when(redisOrderService.getOrderCache(memberId, eventId)).thenReturn(order);
+
+        var result = orderService.getOrderStatusFromRedis(memberId, eventId);
+
+        assertNotNull(result);
+        assertEquals("SUCCESS", result.getStatus());
+        assertEquals(order, result.getOrder());
+    }
+
+    @Test
+    @DisplayName("查詢下單狀態等待中 - Redis 尚無訂單資料")
+    void getOrderStatusFromRedis_Pending() {
+        String memberId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString();
+
+        when(redisOrderService.getOrderCache(memberId, eventId)).thenReturn(null);
+
+        var result = orderService.getOrderStatusFromRedis(memberId, eventId);
+
+        assertNotNull(result);
+        assertEquals("PENDING", result.getStatus());
+        assertNull(result.getOrder());
     }
 }

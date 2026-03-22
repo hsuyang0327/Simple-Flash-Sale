@@ -2,7 +2,6 @@ package com.flashsale.backend.controller;
 
 import com.flashsale.backend.common.ApiResponse;
 import com.flashsale.backend.common.ResultCode;
-import com.flashsale.backend.entity.Order;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,21 +56,18 @@ public class RedisController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, page));
     }
 
-    @Operation(summary = "Get Order Status (Redis)", description = "Checks the status of an order directly from Redis cache using the member ID.")
-    @GetMapping("/order-status/{memberId}")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getOrderStatus(
-            @Parameter(description = "ID of the member whose order status is to be checked") @PathVariable String memberId) {
-        String orderKey = "member:order:" + memberId;
-        Order order = (Order) redisTemplateForOrder.opsForValue().get(orderKey);
+    // Removed: GET /order-status/{memberId} — public endpoint with IDOR vulnerability.
+    // Use GET /api/client/orders/status?eventId={eventId} instead (JWT-protected, memberId from token).
 
-        Map<String, Object> response = new HashMap<>();
-        if (order != null) {
-            response.put("status", "SUCCESS");
-            response.put("order", order);
-        } else {
-            response.put("status", "PENDING");
+    @Operation(summary = "Get Single Preheated Product", description = "Retrieves a single preheated product from Redis cache by productId.")
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<ApiResponse<Map<Object, Object>>> getPreheatedProduct(
+            @PathVariable String productId) {
+        String key = "productId:" + productId;
+        Map<Object, Object> product = redisTemplateForStock.opsForHash().entries(key);
+        if (product == null || product.isEmpty()) {
+            return ResponseEntity.ok(ApiResponse.of(ResultCode.EVENT_NOT_FOUND));
         }
-
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, product));
     }
 }

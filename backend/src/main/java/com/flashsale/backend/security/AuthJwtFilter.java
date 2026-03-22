@@ -46,8 +46,8 @@ public class AuthJwtFilter extends OncePerRequestFilter {
                 path.equals("/api/client/auth/refresh") ||
                 path.equals("/api/client/auth/logout") ||
                 path.startsWith("/api/client/open/") ||
-                path.startsWith("/api/admin/")||
-                path.startsWith("/api/test/")) {
+                path.startsWith("/api/admin/") ||
+                path.startsWith("/api/test/")) { // TODO: dev/test only — remove or restrict to dev profile before deploying to production
             filterChain.doFilter(request, response);
             return;
         }
@@ -55,7 +55,7 @@ public class AuthJwtFilter extends OncePerRequestFilter {
             String jwt = jwtUtils.getJwtFromCookies(request, "access_token");
 
             if (jwt == null) {
-                filterChain.doFilter(request, response);
+                handleError(response, ResultCode.TOKEN_MISSING);
                 return;
             }
             jwtUtils.validateJwtToken(jwt);

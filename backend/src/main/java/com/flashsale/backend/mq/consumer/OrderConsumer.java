@@ -4,14 +4,13 @@ import com.flashsale.backend.config.RabbitConfig;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.OrderRepository;
+import com.flashsale.backend.service.RedisOrderService;
 import com.flashsale.backend.service.RedisStockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +24,7 @@ public class OrderConsumer {
     private final OrderRepository orderRepository;
     private final EventRepository eventRepository;
     private final RedisStockService redisStockService;
-
-    @Qualifier("redisTemplateDb0")
-    private final RedisTemplate<String, Object> redisTemplateForStock;
-
-    @Qualifier("redisTemplateDb1")
-    private final RedisTemplate<String, Object> redisTemplateForOrder;
-
+    private final RedisOrderService redisOrderService;
     private final RabbitTemplate rabbitTemplate;
 
     /**
@@ -57,8 +50,7 @@ public class OrderConsumer {
             }
 
             // 3. Cache order status in Redis
-            String memberOrderKey = "member:order:" + savedOrder.getMemberId();
-            redisTemplateForOrder.opsForValue().set(memberOrderKey, savedOrder);
+            redisOrderService.setOrderCache(savedOrder.getMemberId(), savedOrder.getEventId(), savedOrder);
             log.info("Order processed and cached in Redis: {}", savedOrder.getOrderId());
 
             // 4. Send to TTL queue for delayed cancellation check
@@ -72,6 +64,7 @@ public class OrderConsumer {
         } catch (Exception e) {
             log.error("Error processing create order: {}. Restoring Redis stock.", order.getOrderId(), e);
             redisStockService.increaseStock(order.getProductId(), order.getQuantity());
+            redisOrderService.deleteOrderCache(order.getMemberId(), order.getEventId());
             throw new AmqpRejectAndDontRequeueException("Error processing create order", e);
         }
     }
@@ -101,7 +94,10 @@ public class OrderConsumer {
                 order.setStatus("FAILED");
                 orderRepository.save(order);
 
-                // 4. Restore Stock
+                // 4. Evict Redis order cache so the next read falls through to MySQL
+                redisOrderService.deleteOrderCache(order.getMemberId(), order.getEventId());
+
+                // 5. Restore Stock
                 eventRepository.increaseStock(order.getEventId(), order.getQuantity());
                 redisStockService.increaseStock(order.getProductId(), order.getQuantity());
                 log.info("Order {} cancelled and stock restored.", order.getOrderId());

@@ -36,6 +36,8 @@ public class PaymentController {
     @PostMapping("/pay")
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> payOrder(@Valid @RequestBody PaymentRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
+        // Override client-supplied memberId with the value from JWT to prevent IDOR
+        request.setMemberId(memberId);
         log.info("API: Pay order (Client): orderId={}, memberId={}", request.getOrderId(), memberId);
         Order order = orderService.payOrder(request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, orderService.convertToClientResponse(order)));

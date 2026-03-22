@@ -10,6 +10,7 @@ import com.flashsale.backend.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,6 +37,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final ProductService productService;
+    @Qualifier("redisTemplateDb0") // Explicit: preload writes stock cache to DB0
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String PREHEATED_PRODUCT_KEYS = "preheated_product_keys";

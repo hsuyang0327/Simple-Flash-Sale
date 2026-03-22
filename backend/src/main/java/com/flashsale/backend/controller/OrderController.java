@@ -41,21 +41,34 @@ public class OrderController {
     @PostMapping("/api/client/orders")
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
-        SecurityUtils.checkPermission(memberId);
+        // Override client-supplied memberId with the value from JWT to prevent order spoofing
+        request.setMemberId(memberId);
         log.info("API: Create order (Client): memberId={}", memberId);
         Order order = orderService.createOrder(request);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
-    @Operation(summary = "Update Order (Client)", description = "Updates an existing order. Requires JWT authentication.")
-    @PutMapping("/api/client/orders/{id}")
-    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> updateOrder(
-            @Parameter(description = "ID of the order to update") @PathVariable String id,
-            @Valid @RequestBody OrderRequest request) {
+    @Operation(summary = "Get My Orders (Client)", description = "Retrieves a paginated list of orders for the authenticated user. Requires JWT authentication.")
+    @GetMapping("/api/client/orders")
+    public ResponseEntity<ApiResponse<Page<OrderClientDetailResponse>>> getMyOrders(
+            @Parameter(description = "Pagination information")
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         String memberId = SecurityUtils.getCurrentUserId();
         SecurityUtils.checkPermission(memberId);
-        log.info("API: Update order (Client): orderId={}, memberId={}", id, memberId);
-        Order order = orderService.updateOrder(id, request);
+        log.info("API: Get my orders (Client): memberId={}", memberId);
+        Page<Order> orders = orderService.getOrdersByMemberId(memberId, pageable);
+        Page<OrderClientDetailResponse> response = orders.map(this::convertToClientDetailResponse);
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
+    }
+
+    @Operation(summary = "Cancel Order (Client)", description = "Cancels a PENDING order and restores stock. Requires JWT authentication.")
+    @PatchMapping("/api/client/orders/{id}/cancel")
+    public ResponseEntity<ApiResponse<OrderClientDetailResponse>> cancelOrder(
+            @Parameter(description = "ID of the order to cancel") @PathVariable String id) {
+        String memberId = SecurityUtils.getCurrentUserId();
+        SecurityUtils.checkPermission(memberId);
+        log.info("API: Cancel order (Client): orderId={}, memberId={}", id, memberId);
+        Order order = orderService.cancelOrder(id, memberId);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(order)));
     }
 
@@ -70,13 +83,14 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientDetailResponse(order)));
     }
 
-    @Operation(summary = "Get Order Status (Client)", description = "Checks the status of an order creation process from Redis. Requires JWT authentication.")
-    @GetMapping("/api/client/orders/status/{memberId}")
+    @Operation(summary = "Get Order Status (Client)", description = "Checks the authenticated user's order creation status from Redis. Requires JWT authentication.")
+    @GetMapping("/api/client/orders/status")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> getOrderStatus(
-            @Parameter(description = "ID of the member whose order status is to be checked") @PathVariable String memberId) {
+            @Parameter(description = "Event ID to check order status for") @RequestParam String eventId) {
         String currentUserId = SecurityUtils.getCurrentUserId();
-        log.info("API: Get order status for memberId: {}", currentUserId);
-        OrderStatusResponse response = orderService.getOrderStatusFromRedis(memberId);
+        SecurityUtils.checkPermission(currentUserId);
+        log.info("API: Get order status for memberId: {}, eventId: {}", currentUserId, eventId);
+        OrderStatusResponse response = orderService.getOrderStatusFromRedis(currentUserId, eventId);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
@@ -102,7 +116,7 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(order)));
     }
 
-    public OrderClientDetailResponse convertToClientResponse(Order order) {
+    private OrderClientDetailResponse convertToClientResponse(Order order) {
         return OrderClientDetailResponse.builder()
                 .orderId(order.getOrderId())
                 .productId(order.getProductId())
@@ -113,7 +127,7 @@ public class OrderController {
                 .build();
     }
 
-    public OrderClientDetailResponse convertToClientDetailResponse(Order order) {
+    private OrderClientDetailResponse convertToClientDetailResponse(Order order) {
         Product product = order.getProduct();
         return OrderClientDetailResponse.builder()
                 .orderId(order.getOrderId())
@@ -126,7 +140,7 @@ public class OrderController {
                 .build();
     }
 
-    public OrderAdminResponse convertToAdminResponse(Order order) {
+    private OrderAdminResponse convertToAdminResponse(Order order) {
         Member member = order.getMember();
         Product product = order.getProduct();
         return OrderAdminResponse.builder()

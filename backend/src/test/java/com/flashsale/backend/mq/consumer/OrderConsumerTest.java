@@ -4,6 +4,7 @@ import com.flashsale.backend.config.RabbitConfig;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.OrderRepository;
+import com.flashsale.backend.service.RedisOrderService;
 import com.flashsale.backend.service.RedisStockService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -34,10 +33,7 @@ class OrderConsumerTest {
     private RedisStockService redisStockService;
 
     @Mock
-    private RedisTemplate<String, Object> redisTemplateForOrder;
-
-    @Mock
-    private ValueOperations<String, Object> valueOperations;
+    private RedisOrderService redisOrderService;
 
     @Mock
     private RabbitTemplate rabbitTemplate;
@@ -67,9 +63,6 @@ class OrderConsumerTest {
         // Mock MySQL stock decrease
         when(eventRepository.decreaseStock(eq(eventId), eq(quantity))).thenReturn(1);
 
-        // Mock Redis operations (not need to connect redis)
-        when(redisTemplateForOrder.opsForValue()).thenReturn(valueOperations);
-
         orderConsumer.processCreateOrder(order); //action
 
         //Judgement
@@ -77,8 +70,7 @@ class OrderConsumerTest {
 
         verify(eventRepository, times(1)).decreaseStock(eq(eventId), eq(quantity)); // step2 : decrease stock in event
 
-        String memberOrderKey = "member:order:" + memberId;
-        verify(valueOperations, times(1)).set(eq(memberOrderKey), any(Order.class)); //step3 : add pending order to redis
+        verify(redisOrderService, times(1)).setOrderCache(eq(memberId), eq(eventId), any(Order.class)); //step3 : cache order in Redis DB1
 
         verify(rabbitTemplate, times(1)).convertAndSend(
                 eq(RabbitConfig.ORDER_EXCHANGE),
@@ -91,6 +83,7 @@ class OrderConsumerTest {
     @DisplayName("處理取消訂單 - 當訂單為 PENDING 時應取消並回補庫存")
     void processCancelOrder_PendingOrder_ShouldCancelAndRestoreStock() {
         String orderId = UUID.randomUUID().toString();
+        String memberId = UUID.randomUUID().toString();
         String eventId = UUID.randomUUID().toString();
         String productId = UUID.randomUUID().toString();
         int quantity = 1;
@@ -100,6 +93,7 @@ class OrderConsumerTest {
 
         Order existingOrder = new Order();
         existingOrder.setOrderId(orderId);
+        existingOrder.setMemberId(memberId);
         existingOrder.setEventId(eventId);
         existingOrder.setProductId(productId);
         existingOrder.setQuantity(quantity);
@@ -112,9 +106,11 @@ class OrderConsumerTest {
         //Judgement
         verify(orderRepository, times(1)).save(argThat(o -> "FAILED".equals(o.getStatus()))); // step1 : Verify status updated to FAILED
 
-        verify(redisStockService, times(1)).increaseStock(productId, quantity); // step2 : Verify Redis stock restored
+        verify(redisOrderService, times(1)).deleteOrderCache(memberId, eventId); // step2 : Verify Redis order cache evicted
 
-        verify(eventRepository, times(1)).increaseStock(eventId, quantity); // step3 : Verify MySQL stock restored
+        verify(redisStockService, times(1)).increaseStock(productId, quantity); // step3 : Verify Redis stock restored
+
+        verify(eventRepository, times(1)).increaseStock(eventId, quantity); // step4 : Verify MySQL stock restored
     }
 
     @Test
