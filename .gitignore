@@ -1,7 +1,5 @@
-# --- GitHub Copilot dev artifacts (skills, tasks, reports are local-only) ---
-.github/skills/
-.github/tasks/
-.github/reports/
+# --- GitHub Copilot dev artifacts (local-only, not for GitHub) ---
+.github/
 
 # --- Docker & Data (你最關心的部分) ---
 mysql_data/
