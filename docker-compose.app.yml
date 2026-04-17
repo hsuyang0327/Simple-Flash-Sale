@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flash-sale-backend
+    restart: "no"
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://flash-sale-mysql:3306/flash_sale?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATA_REDIS_HOST: flash-sale-redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_RABBITMQ_HOST: flash-sale-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: password
+    networks:
+      - infra-net
+    depends_on:
+      - frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://flash-sale-backend:8080
+    container_name: flash-sale-frontend
+    restart: "no"
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://flash-sale-backend:8080
+      INTERNAL_API_URL: http://flash-sale-backend:8080/api
+    networks:
+      - infra-net
+
+networks:
+  infra-net:
+    external: true
+    name: simple-flash-sale_default
