@@ -19,6 +19,7 @@ public class RedisStockService {
             "if not currentStock then return -1 end " +
             "currentStock = tonumber(currentStock) " +
             "local requestQty = tonumber(ARGV[1]) " +
+            "if currentStock <= 0 then return -3 end " +
             "if currentStock >= requestQty then " +
             "  local newStock = currentStock - requestQty " +
             "  redis.call('HSET', KEYS[1], 'stock', tostring(newStock)) " +
@@ -33,7 +34,10 @@ public class RedisStockService {
             "redis.call('HSET', KEYS[1], 'stock', tostring(newStock)) " +
             "return newStock";
 
-    public boolean decreaseStock(String productId, int quantity) {
+    /**
+     * @return >= 0 成功 (剩餘庫存) | -1 key 不存在 | -2 數量不足 | -3 已售完 (stock=0)
+     */
+    public long decreaseStock(String productId, int quantity) {
         String key = "productId:" + productId;
         try {
             DefaultRedisScript<Long> script = new DefaultRedisScript<>(DECREASE_STOCK_LUA, Long.class);
@@ -42,16 +46,19 @@ public class RedisStockService {
                     Collections.singletonList(key),
                     String.valueOf(quantity)
             );
-            if (result == -1) {
-                log.warn("Stock reduction failed. Event ID: {}, Requested Quantity: {}, Reason: Insufficient stock or Key not found", productId, quantity);
-                return false;
+            if (result == null) {
+                log.error("Redis Lua script returned null for productId: {}", productId);
+                return -1L;
             }
-            log.info("Stock reduced successfully. Event ID: {}, Reduced By: {}, Remaining Stock: {}", productId, quantity, result);
-            return true;
-
+            if (result >= 0) {
+                log.info("Stock reduced successfully. Event ID: {}, Reduced By: {}, Remaining Stock: {}", productId, quantity, result);
+            } else {
+                log.warn("Stock reduction failed. Event ID: {}, Requested Quantity: {}, result={}", productId, quantity, result);
+            }
+            return result;
         } catch (Exception e) {
             log.error("Exception occurred during Redis stock reduction for Event ID: {}", productId, e);
-            return false;
+            return -1L;
         }
     }
 

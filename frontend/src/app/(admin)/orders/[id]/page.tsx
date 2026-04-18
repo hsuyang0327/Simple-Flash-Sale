@@ -43,7 +43,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       <div className="p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">訂單未找到</h1>
-          <Link href="/admin/orders" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
+          <Link href="/orders" className="text-blue-600 hover:text-blue-800 mt-4 inline-block">
             返回訂單列表
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
     <div className="space-y-8 p-8">
       <div className="flex items-center gap-4">
         <Link
-          href="/admin/orders"
+          href="/orders"
           className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
         >
           <ArrowLeft size={20} />

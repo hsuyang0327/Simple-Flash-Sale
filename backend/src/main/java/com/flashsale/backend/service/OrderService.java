@@ -76,10 +76,9 @@ public class OrderService {
         log.info("Creating order (Redis) for member: {}, event: {}", request.getMemberId(), request.getEventId());
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
-        boolean success = redisStockService.decreaseStock(event.getEventId(), request.getQuantity());
-        if (!success) {
-            throw new BusinessException(ResultCode.STOCK_INVALID);
-        }
+        long stockResult = redisStockService.decreaseStock(event.getEventId(), request.getQuantity());
+        if (stockResult == -3) throw new BusinessException(ResultCode.STOCK_SOLD_OUT);
+        if (stockResult < 0)  throw new BusinessException(ResultCode.STOCK_INVALID);
         Order order = new Order();
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
@@ -102,8 +101,12 @@ public class OrderService {
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new BusinessException(ResultCode.EVENT_NOT_FOUND));
         // 2. Deduct Redis Stock
-        boolean success = redisStockService.decreaseStock(event.getProduct().getProductId(), request.getQuantity());
-        if (!success) {
+        long stockResult = redisStockService.decreaseStock(event.getProduct().getProductId(), request.getQuantity());
+        if (stockResult == -3) {
+            log.warn("Create Order (MQ) failed: Product sold out: {}", event.getProduct().getProductId());
+            throw new BusinessException(ResultCode.STOCK_SOLD_OUT);
+        }
+        if (stockResult < 0) {
             log.warn("Create Order (MQ) failed: Insufficient stock for product: {}", event.getProduct().getProductId());
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
@@ -167,6 +170,8 @@ public class OrderService {
         eventRepository.increaseStock(order.getEventId(), order.getQuantity());
         // 回滾 Redis 庫存
         redisStockService.increaseStock(order.getProductId(), order.getQuantity());
+        // 清除 Redis DB1 訂單快取
+        redisOrderService.deleteOrderCache(order.getMemberId(), order.getEventId());
         log.info("Order {} cancelled and stock restored.", orderId);
         return savedOrder;
     }

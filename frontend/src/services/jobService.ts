@@ -34,4 +34,10 @@ export const JobService = {
      */
     updateCron: (data: JobCronRequest): Promise<void> =>
         http.post(`${BASE_PATH}/cron`, data),
+
+    /**
+     * 手動預熱今日活動到 Redis (@PostMapping("/preload-today"))
+     */
+    preloadToday: (): Promise<void> =>
+        http.post(`${BASE_PATH}/preload-today`),
 };

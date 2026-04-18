@@ -177,15 +177,17 @@ export default function EventTable({ productId, initialEvents }: EventTableProps
                       <div className="flex justify-center gap-2.5">
                         <button
                           onClick={() => handleEditEvent(event)}
-                          className="p-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl shadow-sm transition-all active:scale-90 hover:bg-blue-100 disabled:opacity-50"
-                          disabled={loading}
+                          className="p-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl shadow-sm transition-all active:scale-90 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={loading || event.status === 1}
+                          title={event.status === 1 ? "活動進行中不可編輯" : undefined}
                         >
                           <Edit3 size={15} />
                         </button>
                         <button
                           onClick={() => handleDelete(event)}
-                          className="p-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl shadow-sm transition-all active:scale-90 hover:bg-red-100 disabled:opacity-50"
-                          disabled={loading}
+                          className="p-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl shadow-sm transition-all active:scale-90 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={loading || event.status === 1}
+                          title={event.status === 1 ? "活動進行中不可刪除" : undefined}
                         >
                           <Trash2 size={15} />
                         </button>

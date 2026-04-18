@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @description Redis Order Cache Service (db1)
  * @author Yang-Hsu
@@ -30,8 +32,8 @@ public class RedisOrderService {
      */
     public void setOrderCache(String memberId, String eventId, Order order) {
         String key = buildKey(memberId, eventId);
-        redisTemplate.opsForValue().set(key, order);
-        log.info("Order cached in Redis: key={}", key);
+        redisTemplate.opsForValue().set(key, order, 30, TimeUnit.MINUTES);
+        log.info("Order cached in Redis (TTL=30min): key={}", key);
     }
 
     /**

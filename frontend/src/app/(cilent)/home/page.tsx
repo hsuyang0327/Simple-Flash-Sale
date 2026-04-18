@@ -8,7 +8,7 @@ import { EventProductDTO } from '@/types/event';
 function formatTime(iso: string): string {
   if (!iso) return '-';
   const d = new Date(iso);
-  return d.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 export default function ClientHome() {
@@ -16,7 +16,7 @@ export default function ClientHome() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    FlashSaleService.list(0, 20)
+    FlashSaleService.list(0, 100)
       .then(res => setProducts(res.content))
       .catch(() => {/* error handled by http.ts toast */})
       .finally(() => setLoading(false));
@@ -33,14 +33,14 @@ export default function ClientHome() {
   if (products.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <p className="text-gray-400 text-sm">目前沒有進行中的閃購活動</p>
+        <p className="text-gray-400 text-sm">目前沒有進行中的搶購活動</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">閃購活動</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">搶購活動</h1>
       <p className="text-xs text-gray-400 uppercase tracking-widest italic font-mono mb-8">Flash Sale Events</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

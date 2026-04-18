@@ -14,6 +14,5 @@ public class PaymentRequest {
     @NotBlank(message = "ORDER_ID_EMPTY")
     private String orderId;
 
-    @NotBlank(message = "MEMBER_ID_EMPTY")
     private String memberId;
 }

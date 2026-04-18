@@ -32,7 +32,7 @@ public class OrderConsumer {
      * @author Yang-Hsu
      * @date 2026/2/19 下午8:27
      */
-    @RabbitListener(queues = RabbitConfig.ORDER_QUEUE)
+    @RabbitListener(containerFactory = "noRetryContainerFactory", queues = RabbitConfig.ORDER_QUEUE)
     @Transactional
     public void processCreateOrder(Order order) {
         log.info("Processing order from MQ for member: {}", order.getMemberId());

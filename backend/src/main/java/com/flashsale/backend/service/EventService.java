@@ -93,6 +93,9 @@ public class EventService {
         if (LocalDateTime.now().isAfter(event.getEndTime())) {
             throw new BusinessException(ResultCode.EVENT_EXPIRED);
         }
+        if (LocalDateTime.now().isAfter(event.getStartTime())) {
+            throw new BusinessException(ResultCode.EVENT_ALREADY_STARTED);
+        }
 
         productService.getProductById(request.getProductId());
         BeanUtils.copyProperties(request, event, BeanCopyUtil.getNullPropertyNames(request));
@@ -111,8 +114,22 @@ public class EventService {
     public void deleteEvent(String eventId) {
         log.info("Deleting event: {}", eventId);
         Event event = getEventById(eventId);
+        if (LocalDateTime.now().isAfter(event.getStartTime())) {
+            throw new BusinessException(ResultCode.EVENT_ALREADY_STARTED);
+        }
         eventRepository.delete(event);
         log.info("Event deleted successfully: {}", eventId);
+    }
+
+    /**
+     * @description Preload today's active events into Redis (manual trigger for testing)
+     * @author Yang-Hsu
+     */
+    @Transactional(readOnly = true)
+    public void preloadEventsForToday() {
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+        LocalDateTime endOfToday = LocalDate.now().atTime(LocalTime.MAX);
+        preloadEventsForDateRange(startOfToday, endOfToday);
     }
 
     /**
@@ -124,7 +141,11 @@ public class EventService {
     public void preloadEventsForTomorrow() {
         LocalDateTime startOfTomorrow = LocalDate.now().plusDays(1).atStartOfDay();
         LocalDateTime endOfTomorrow = LocalDate.now().plusDays(1).atTime(LocalTime.MAX);
-        List<EventProductDTO> preheatData = eventRepository.findPreheatEvents(startOfTomorrow, endOfTomorrow);
+        preloadEventsForDateRange(startOfTomorrow, endOfTomorrow);
+    }
+
+    private void preloadEventsForDateRange(LocalDateTime start, LocalDateTime end) {
+        List<EventProductDTO> preheatData = eventRepository.findPreheatEvents(start, end);
         redisTemplate.delete(PREHEATED_PRODUCT_KEYS);
         for (EventProductDTO dto : preheatData) {
             String productKey = "productId:" + dto.getProductId();

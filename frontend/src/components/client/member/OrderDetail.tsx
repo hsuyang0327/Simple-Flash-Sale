@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 import { OrderClientService } from '@/services/orderClientService';
 import { OrderClientDetailResponse } from '@/types/order';
 
@@ -26,6 +28,7 @@ const formatPrice = (price: number) =>
 export default function OrderDetail({ orderId }: { orderId: string }) {
   const [order, setOrder] = useState<OrderClientDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     OrderClientService.get(orderId)
@@ -33,6 +36,30 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [orderId]);
+
+  const handleCancel = async () => {
+    const result = await Swal.fire({
+      title: '確定要取消訂單？',
+      text: '取消後庫存將會歸還，此操作無法復原。',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '確定取消',
+      cancelButtonText: '返回',
+      confirmButtonColor: '#ef4444',
+    });
+    if (!result.isConfirmed) return;
+
+    setCancelling(true);
+    try {
+      const updated = await OrderClientService.cancel(orderId);
+      setOrder(updated);
+      toast.success('訂單已取消');
+    } catch {
+      // 錯誤由 http.ts 攔截器統一 toast
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,6 +111,18 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
             value={new Date(order.createdAt).toLocaleString('zh-TW')}
           />
         </div>
+
+        {order.status === 'PAID' && (
+          <div className="pt-4 border-t border-gray-100">
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="px-5 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors"
+            >
+              {cancelling ? '取消中...' : '取消訂單'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

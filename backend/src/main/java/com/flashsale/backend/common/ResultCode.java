@@ -38,6 +38,7 @@ public enum ResultCode {
     // Event
     EVENT_NOT_FOUND(4401, "event_not_found"),
     EVENT_EXPIRED(4402, "event_expired"),
+    EVENT_ALREADY_STARTED(4403, "event_already_started"),
 
     // Job
     JOB_NOT_FOUND(4501, "job_not_found"),
@@ -56,6 +57,7 @@ public enum ResultCode {
     PRICE_INVALID(4607, "price_invalid"),
     STOCK_EMPTY(4608, "stock_is_required"),
     STOCK_INVALID(4609, "stock_invalid"),
+    STOCK_SOLD_OUT(4620, "stock_sold_out"),
     STATUS_INVALID(4610, "status_invalid"),
     START_TIME_EMPTY(4611, "start_time_is_required"),
     END_TIME_EMPTY(4612, "end_time_is_required"),

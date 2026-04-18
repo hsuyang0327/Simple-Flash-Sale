@@ -1,8 +1,9 @@
 'use client';
 
-import { Play, Pause, Zap, Edit3, Calendar, CheckCircle2, AlertCircle, List } from 'lucide-react';
+import { Play, Pause, Zap, Edit3, Calendar, CheckCircle2, AlertCircle, List, Flame } from 'lucide-react';
 import { useState } from 'react';
 import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import cronstrue from 'cronstrue/i18n';
 import { JobResponse, JobRequest } from '@/types/job';
 import { JobService } from '@/services/jobService';
@@ -16,6 +17,7 @@ export default function JobTable({ initialJobs = [] }: JobTableProps) {
   const [jobs, setJobs] = useState<JobResponse[]>(initialJobs);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<JobResponse | null>(null);
+  const [isPreloading, setIsPreloading] = useState(false);
 
   // 封裝統一的 SweetAlert2 成功彈窗
   const showSuccess = (title: string, text: string) => {
@@ -80,6 +82,18 @@ export default function JobTable({ initialJobs = [] }: JobTableProps) {
     }
   };
 
+  const handlePreloadToday = async () => {
+    setIsPreloading(true);
+    try {
+      await JobService.preloadToday();
+      toast.success('今日活動已預熱至 Redis');
+    } catch (error) {
+      console.error('Preload today failed:', error);
+    } finally {
+      setIsPreloading(false);
+    }
+  };
+
   const onUpdateCron = async (newCron: string) => {
     if (!selectedJob) return;
     try {
@@ -98,7 +112,7 @@ export default function JobTable({ initialJobs = [] }: JobTableProps) {
 
   return (
     <div className="w-full space-y-8 p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
             <List size={24} />
@@ -126,6 +140,19 @@ export default function JobTable({ initialJobs = [] }: JobTableProps) {
             <p className="text-2xl font-black text-amber-600">{stats.paused}</p>
           </div>
         </div>
+        <button
+          onClick={handlePreloadToday}
+          disabled={isPreloading}
+          className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:border-orange-200 hover:bg-orange-50/50 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed w-full text-left"
+        >
+          <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center shrink-0">
+            <Flame size={24} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">測試工具</p>
+            <p className="text-sm font-black text-orange-500">{isPreloading ? '預熱中...' : '預熱今日活動'}</p>
+          </div>
+        </button>
       </div>
 
       <div className="bg-white border border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden">

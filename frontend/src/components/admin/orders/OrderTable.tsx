@@ -98,7 +98,7 @@ export default function OrderTable({ initialOrders }: OrderTableProps) {
                   </td>
                   <td className="px-6 py-7 text-center">
                     <Link
-                      href={`/admin/orders/${order.orderId}`}
+                      href={`/orders/${order.orderId}`}
                       className="p-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl shadow-sm transition-all active:scale-90 hover:bg-blue-100 inline-flex items-center"
                     >
                       <Eye size={15} />

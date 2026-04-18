@@ -14,6 +14,7 @@ interface EventFormProps {
 
 export default function EventForm({ productId, initialEvent, onSuccess, onCancel }: EventFormProps) {
   const isEditMode = !!initialEvent;
+  const isLocked = isEditMode && initialEvent?.status === 1;
 
   const [formData, setFormData] = useState<EventRequest>({
     productId,
@@ -94,6 +95,14 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* 活動進行中警告 */}
+      {isLocked && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-xl text-yellow-800 text-sm font-bold">
+          <span>⚠️</span>
+          <span>活動進行中，所有欄位暫時無法修改</span>
+        </div>
+      )}
+
       {/* 價格 */}
       <div>
         <label className="block text-sm font-bold text-slate-900 mb-2">
@@ -105,7 +114,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
           value={formData.price}
           onChange={handleChange}
           placeholder="輸入價格"
-          disabled={loading}
+          disabled={isLocked || loading}
           className={`w-full px-4 py-2.5 border ${errors.price ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50`}
         />
         {errors.price && <p className="mt-1 text-xs text-red-600 font-bold">{errors.price}</p>}
@@ -122,7 +131,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
           value={formData.stock}
           onChange={handleChange}
           placeholder="輸入庫存數量"
-          disabled={loading}
+          disabled={isLocked || loading}
           className={`w-full px-4 py-2.5 border ${errors.stock ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50`}
         />
         {errors.stock && <p className="mt-1 text-xs text-red-600 font-bold">{errors.stock}</p>}
@@ -138,7 +147,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
           name="startTime"
           value={formData.startTime}
           onChange={handleChange}
-          disabled={loading}
+          disabled={isLocked || loading}
           className={`w-full px-4 py-2.5 border ${errors.startTime ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50`}
         />
         {errors.startTime && <p className="mt-1 text-xs text-red-600 font-bold">{errors.startTime}</p>}
@@ -154,7 +163,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
           name="endTime"
           value={formData.endTime}
           onChange={handleChange}
-          disabled={loading}
+          disabled={isLocked || loading}
           className={`w-full px-4 py-2.5 border ${errors.endTime ? 'border-red-500' : 'border-slate-200'} rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50`}
         />
         {errors.endTime && <p className="mt-1 text-xs text-red-600 font-bold">{errors.endTime}</p>}
@@ -167,7 +176,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
           name="status"
           value={formData.status}
           onChange={handleChange}
-          disabled={loading}
+          disabled={isLocked || loading}
           className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50"
         >
           <option value={0}>即將開始</option>
@@ -188,7 +197,7 @@ export default function EventForm({ productId, initialEvent, onSuccess, onCancel
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={isLocked || loading}
           className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-sm transition-all hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? '提交中...' : isEditMode ? '更新' : '新增'}

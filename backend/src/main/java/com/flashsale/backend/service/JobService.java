@@ -128,23 +128,32 @@ public class JobService {
     public void updateJobCron(String jobName, String jobGroup, String cronExpression) {
         try {
             JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
-            List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
-            if (triggers.isEmpty()) {
+            if (!scheduler.checkExists(jobKey)) {
                 throw new BusinessException(ResultCode.JOB_NOT_FOUND);
             }
 
-            // Assuming one trigger per job for simplicity, or update all cron triggers
-            for (Trigger trigger : triggers) {
-                if (trigger instanceof CronTrigger cronTrigger) {
-                    String oldCron = cronTrigger.getCronExpression();
-                    if (!oldCron.equalsIgnoreCase(cronExpression)) {
-                        CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
-                        CronTrigger newTrigger = TriggerBuilder.newTrigger()
-                                .withIdentity(trigger.getKey())
-                                .withSchedule(scheduleBuilder)
-                                .build();
-                        scheduler.rescheduleJob(trigger.getKey(), newTrigger);
-                        log.info("Updated cron for job {}.{}: {} -> {}", jobGroup, jobName, oldCron, cronExpression);
+            List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+            if (triggers.isEmpty()) {
+                // 沒有 Trigger，新建一個
+                CronTrigger newTrigger = TriggerBuilder.newTrigger()
+                        .forJob(jobKey)
+                        .withIdentity(jobName + "Trigger", jobGroup)
+                        .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+                        .build();
+                scheduler.scheduleJob(newTrigger);
+                log.info("Created new trigger for job {}.{}: {}", jobGroup, jobName, cronExpression);
+            } else {
+                for (Trigger trigger : triggers) {
+                    if (trigger instanceof CronTrigger cronTrigger) {
+                        String oldCron = cronTrigger.getCronExpression();
+                        if (!oldCron.equalsIgnoreCase(cronExpression)) {
+                            CronTrigger newTrigger = TriggerBuilder.newTrigger()
+                                    .withIdentity(trigger.getKey())
+                                    .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+                                    .build();
+                            scheduler.rescheduleJob(trigger.getKey(), newTrigger);
+                            log.info("Updated cron for job {}.{}: {} -> {}", jobGroup, jobName, oldCron, cronExpression);
+                        }
                     }
                 }
             }

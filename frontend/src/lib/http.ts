@@ -29,6 +29,8 @@ const safeToast = {
 };
 // 響應攔截器
 let isRefreshing = false;
+let hasSilentOnlyWaiters = true;  // false if any non-silent request is queued for refresh
+let notLoggedIn = false;           // true if trigger was 4004 (no token) and no 4002 mixed in
 let isShowingAuthPopup = false;
 let refreshSubscribers: Array<(failed?: boolean) => void> = [];
 
@@ -66,6 +68,8 @@ function showAuthPopup(title: string, text: string) {
  * Business error code handler — must be defined before the interceptor that calls it
  */
 function handleBusinessError(code: number, message: string) {
+  // 4609 STOCK_INVALID, 4620 STOCK_SOLD_OUT：由各頁面自行顯示更友善的提示，這裡不 toast
+  if (code === 4609 || code === 4620) return;
   if (code >= 4500 && code <= 4599) {
     safeToast.error(`任務操作失敗: ${message}`);
   } else if (code === 5000) {
@@ -107,16 +111,36 @@ http.interceptors.response.use(
             return Promise.reject(error);
           }
           const originalRequest = error.config;
+          // Track if a non-silent request is waiting — determines whether popup shows on refresh failure
+          if (!(error.config as SilentAuthConfig)?._silentAuth) {
+            hasSilentOnlyWaiters = false;
+            // 4002 = expired session (had token before); 4004 = never logged in
+            // 4002 takes priority: if both appear, show "expired" not "not logged in"
+            if (bizCode === 4004 && !notLoggedIn) notLoggedIn = true;
+            if (bizCode === 4002) notLoggedIn = false;
+          }
           if (!isRefreshing) {
             isRefreshing = true;
-            http.post('/client/auth/refresh', null, { _skipRefreshQueue: true } as SilentAuthConfig)
+            // Always mark refresh itself as silent: popup is handled in .catch() below
+            http.post('/client/auth/refresh', null, { _skipRefreshQueue: true, _silentAuth: true } as SilentAuthConfig)
               .then(() => {
                 isRefreshing = false;
+                hasSilentOnlyWaiters = true;
+                notLoggedIn = false;
                 onRefreshed();
               })
               .catch(() => {
-                // refresh 失敗由 4003/4001 interceptor 統一處理彈窗
+                // Only show popup if at least one non-silent request was waiting
+                if (!hasSilentOnlyWaiters) {
+                  if (notLoggedIn) {
+                    showAuthPopup('請先登入', '此操作需要登入後才能進行');
+                  } else {
+                    showAuthPopup('登入已過期', '請重新登入');
+                  }
+                }
                 isRefreshing = false;
+                hasSilentOnlyWaiters = true;
+                notLoggedIn = false;
                 onRefreshFailed();
               });
           }

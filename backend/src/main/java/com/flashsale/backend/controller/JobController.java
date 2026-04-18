@@ -5,6 +5,7 @@ import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.JobCronRequest;
 import com.flashsale.backend.dto.request.JobRequest;
 import com.flashsale.backend.dto.response.JobResponse;
+import com.flashsale.backend.service.EventService;
 import com.flashsale.backend.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,7 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
+    private final EventService eventService;
 
     @Operation(summary = "List All Jobs", description = "Retrieves a list of all scheduled jobs and their current status.")
     @GetMapping
@@ -67,6 +69,14 @@ public class JobController {
     public ResponseEntity<ApiResponse<Void>> updateJobCron(@Valid @RequestBody JobCronRequest request) {
         log.info("API: Update job cron (Admin): {}.{} -> {}", request.getJobGroup(), request.getJobName(), request.getCronExpression());
         jobService.updateJobCron(request.getJobName(), request.getJobGroup(), request.getCronExpression());
+        return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
+    }
+
+    @Operation(summary = "Preload Today's Events", description = "Manually preloads today's active flash sale events into Redis. Use for testing when events start today.")
+    @PostMapping("/preload-today")
+    public ResponseEntity<ApiResponse<Void>> preloadToday() {
+        log.info("API: Manually preload today's events into Redis (Admin)");
+        eventService.preloadEventsForToday();
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
     }
 }

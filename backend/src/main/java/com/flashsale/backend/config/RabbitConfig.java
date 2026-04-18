@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -115,5 +116,20 @@ public class RabbitConfig {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
         return template;
+    }
+
+    /**
+     * 專用於 ORDER_QUEUE 的 ContainerFactory：不進行 retry。
+     * 原因：訂單建立失敗（如 MySQL 庫存不足）屬於不可重試錯誤；
+     * 若使用 retry，catch block 中的 Redis 還原會被執行多次，造成庫存虛增。
+     */
+    @Bean
+    public SimpleRabbitListenerContainerFactory noRetryContainerFactory(
+            ConnectionFactory connectionFactory, MessageConverter jsonMessageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jsonMessageConverter);
+        factory.setDefaultRequeueRejected(false);
+        return factory;
     }
 }
