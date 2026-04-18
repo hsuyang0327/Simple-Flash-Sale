@@ -12,9 +12,9 @@ interface MemberTableProps {
 
 export default function MemberTable({ initialMembers }: MemberTableProps) {
   const [members, setMembers] = useState<MemberAdminResponse[]>(initialMembers?.content || []);
-  const [currentPage, setCurrentPage] = useState(initialMembers?.number || 0);
-  const [totalPages, setTotalPages] = useState(initialMembers?.totalPages || 0);
-  const [totalElements, setTotalElements] = useState(initialMembers?.totalElements || 0);
+  const [currentPage, setCurrentPage] = useState(initialMembers?.page?.number || 0);
+  const [totalPages, setTotalPages] = useState(initialMembers?.page?.totalPages || 0);
+  const [totalElements, setTotalElements] = useState(initialMembers?.page?.totalElements || 0);
   const [pageSize] = useState(10);
   const [loading, setLoading] = useState(false);
 
@@ -36,9 +36,9 @@ export default function MemberTable({ initialMembers }: MemberTableProps) {
     try {
       const data = await MemberAdminService.list(page, pageSize);
       setMembers(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setCurrentPage(data.page.number);
+      setTotalPages(data.page.totalPages);
+      setTotalElements(data.page.totalElements);
     } catch (error) {
       console.error("Failed to load member list:", error);
     } finally {

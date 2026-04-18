@@ -12,9 +12,9 @@ interface OrderTableProps {
 
 export default function OrderTable({ initialOrders }: OrderTableProps) {
   const [orders, setOrders] = useState<OrderAdminResponse[]>(initialOrders?.content || []);
-  const [currentPage, setCurrentPage] = useState(initialOrders?.number || 0);
-  const [totalPages, setTotalPages] = useState(initialOrders?.totalPages || 0);
-  const [totalElements, setTotalElements] = useState(initialOrders?.totalElements || 0);
+  const [currentPage, setCurrentPage] = useState(initialOrders?.page?.number || 0);
+  const [totalPages, setTotalPages] = useState(initialOrders?.page?.totalPages || 0);
+  const [totalElements, setTotalElements] = useState(initialOrders?.page?.totalElements || 0);
   const [pageSize] = useState(10);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useState<OrderSearchParams>({});
@@ -24,9 +24,9 @@ export default function OrderTable({ initialOrders }: OrderTableProps) {
     try {
       const data = await OrderAdminService.list({ ...params, page, size: pageSize });
       setOrders(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setCurrentPage(data.page.number);
+      setTotalPages(data.page.totalPages);
+      setTotalElements(data.page.totalElements);
     } catch (error) {
       console.error("Failed to load order list:", error);
     } finally {

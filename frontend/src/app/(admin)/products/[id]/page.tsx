@@ -25,12 +25,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             console.error("Failed to fetch events:", error);
             events = {
                 content: [],
-                totalElements: 0,
-                totalPages: 0,
-                number: 0,
-                size: 10,
-                first: true,
-                last: true
+                page: { size: 10, number: 0, totalElements: 0, totalPages: 0 },
             };
         }
     }

@@ -36,9 +36,9 @@ export default function OrderList() {
     try {
       const data = await OrderClientService.list(page, pageSize);
       setOrders(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setCurrentPage(data.page.number);
+      setTotalPages(data.page.totalPages);
+      setTotalElements(data.page.totalElements);
     } catch {
       // 錯誤由 http.ts toast 處理
     } finally {

@@ -8,12 +8,12 @@ export interface MemberAdminResponse {
 
 export interface MemberAdminPageResponse {
   content: MemberAdminResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export interface MemberClientResponse {

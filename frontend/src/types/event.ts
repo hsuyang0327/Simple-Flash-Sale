@@ -11,12 +11,12 @@ export interface EventResponse {
 
 export interface EventPageResponse {
   content: EventResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export interface EventSearchParams {
@@ -48,10 +48,10 @@ export interface EventProductDTO {
 
 export interface EventProductPageResponse {
   content: EventProductDTO[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }

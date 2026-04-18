@@ -13,12 +13,12 @@ export interface OrderAdminResponse {
 
 export interface OrderAdminPageResponse {
   content: OrderAdminResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export interface OrderSearchParams {
@@ -40,12 +40,12 @@ export interface OrderClientDetailResponse {
 
 export interface OrderClientPageResponse {
   content: OrderClientDetailResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export interface OrderStatusResponse {

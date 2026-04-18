@@ -13,9 +13,9 @@ interface ProductTableProps {
 
 export default function ProductTable({ initialProducts }: ProductTableProps) {
   const [products, setProducts] = useState<ProductAdminResponse[]>(initialProducts?.content || []);
-  const [currentPage, setCurrentPage] = useState(initialProducts?.number || 0);
-  const [totalPages, setTotalPages] = useState(initialProducts?.totalPages || 0);
-  const [totalElements, setTotalElements] = useState(initialProducts?.totalElements || 0);
+  const [currentPage, setCurrentPage] = useState(initialProducts?.page?.number || 0);
+  const [totalPages, setTotalPages] = useState(initialProducts?.page?.totalPages || 0);
+  const [totalElements, setTotalElements] = useState(initialProducts?.page?.totalElements || 0);
   const [pageSize] = useState(10);
   const [loading, setLoading] = useState(false);
   const [searchName, setSearchName] = useState('');
@@ -42,9 +42,9 @@ export default function ProductTable({ initialProducts }: ProductTableProps) {
         size: pageSize
       });
       setProducts(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setCurrentPage(data.page.number);
+      setTotalPages(data.page.totalPages);
+      setTotalElements(data.page.totalElements);
     } catch (error) {
       console.error("Failed to load product list:", error);
     } finally {

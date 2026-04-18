@@ -15,12 +15,12 @@ export interface ProductClientResponse {
 
 export interface ProductAdminPageResponse {
   content: ProductAdminResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  page: {
+    size: number;
+    number: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export interface ProductSearchParams {

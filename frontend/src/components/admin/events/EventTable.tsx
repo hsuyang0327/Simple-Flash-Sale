@@ -14,9 +14,9 @@ interface EventTableProps {
 
 export default function EventTable({ productId, initialEvents }: EventTableProps) {
   const [events, setEvents] = useState<EventResponse[]>(initialEvents?.content || []);
-  const [currentPage, setCurrentPage] = useState(initialEvents?.number || 0);
-  const [totalPages, setTotalPages] = useState(initialEvents?.totalPages || 0);
-  const [totalElements, setTotalElements] = useState(initialEvents?.totalElements || 0);
+  const [currentPage, setCurrentPage] = useState(initialEvents?.page?.number || 0);
+  const [totalPages, setTotalPages] = useState(initialEvents?.page?.totalPages || 0);
+  const [totalElements, setTotalElements] = useState(initialEvents?.page?.totalElements || 0);
   const [pageSize] = useState(10);
   const [loading, setLoading] = useState(false);
 
@@ -42,9 +42,9 @@ export default function EventTable({ productId, initialEvents }: EventTableProps
     try {
       const data = await EventService.listByProductId(productId, page, pageSize);
       setEvents(data.content);
-      setCurrentPage(data.number);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setCurrentPage(data.page.number);
+      setTotalPages(data.page.totalPages);
+      setTotalElements(data.page.totalElements);
     } catch (error) {
       console.error("Failed to load event list:", error);
     } finally {

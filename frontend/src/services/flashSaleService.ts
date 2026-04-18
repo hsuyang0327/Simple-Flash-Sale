@@ -23,8 +23,8 @@ export const FlashSaleService = {
   /**
    * Get paginated list of preheated flash sale products from Redis
    */
-  list: (page = 0, size = 20): Promise<{ content: EventProductDTO[]; totalElements: number; totalPages: number; number: number; first: boolean; last: boolean }> =>
-    http.get<{ content: RedisProductMap[]; totalElements: number; totalPages: number; number: number; first: boolean; last: boolean }>(
+  list: (page = 0, size = 20): Promise<{ content: EventProductDTO[]; page: { size: number; number: number; totalElements: number; totalPages: number } }> =>
+    http.get<{ content: RedisProductMap[]; page: { size: number; number: number; totalElements: number; totalPages: number } }>(
       `${BASE_PATH}/preheated-products?page=${page}&size=${size}`
     ).then(res => ({
       ...res,

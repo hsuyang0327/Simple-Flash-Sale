@@ -12,12 +12,7 @@ export default async function OrdersPage() {
     console.error("Server fetch failed", error);
     initialOrders = {
       content: [],
-      totalElements: 0,
-      totalPages: 0,
-      number: 0,
-      size: 10,
-      first: true,
-      last: true
+      page: { size: 10, number: 0, totalElements: 0, totalPages: 0 },
     };
   }
 
