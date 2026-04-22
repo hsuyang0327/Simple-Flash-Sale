@@ -10,7 +10,7 @@ export interface SilentAuthConfig extends InternalAxiosRequestConfig {
 const http = axios.create({
   // 💡 自動判斷環境：Server 端連 8080，Client 端連 3000(透過 /api 轉發)
   baseURL: typeof window === 'undefined' 
-    ? 'http://127.0.0.1:8080/api' 
+    ? (process.env.INTERNAL_API_URL || 'http://127.0.0.1:8080/api')
     : '/api',
   timeout: 10000,
   withCredentials: true,

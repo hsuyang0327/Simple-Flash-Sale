@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import MemberTable from '@/components/admin/members/MemberTable';
 import { MemberAdminService } from '@/services/memberAdminService';
 import { User } from 'lucide-react';

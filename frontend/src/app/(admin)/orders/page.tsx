@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import OrderTable from '@/components/admin/orders/OrderTable';
 import { OrderAdminService } from '@/services/orderAdminService';
 import { ShoppingCart } from 'lucide-react';

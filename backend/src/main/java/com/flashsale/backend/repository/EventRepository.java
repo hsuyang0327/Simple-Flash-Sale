@@ -91,6 +91,6 @@ public interface EventRepository extends JpaRepository<Event, String> {
             "FROM Event e " +
             "JOIN e.product p " +
             "WHERE e.status = 1 AND p.status = 1 " +
-            "AND e.startTime BETWEEN :startTime AND :endTime")
+            "AND e.startTime <= :endTime AND e.endTime >= :startTime")
     List<EventProductDTO> findPreheatEvents(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 }

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import ProductForm from '@/components/admin/products/ProductForm';
 import EventTable from '@/components/admin/events/EventTable';
 import { ProductService } from '@/services/productService';

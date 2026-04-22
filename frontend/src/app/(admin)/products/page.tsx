@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import ProductTable from '@/components/admin/products/ProductTable';
 import { ProductService } from '@/services/productService';
 import { Package } from 'lucide-react';

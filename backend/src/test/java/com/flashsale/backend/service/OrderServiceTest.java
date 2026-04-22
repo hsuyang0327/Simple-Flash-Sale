@@ -81,7 +81,7 @@ class OrderServiceTest {
         event.setPrice(new BigDecimal("100"));
 
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(true);
+        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(1L);
 
         Order result = orderService.createOrder(request); // create order action
 
@@ -115,7 +115,7 @@ class OrderServiceTest {
         event.setProduct(product);
 
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(false);
+        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(-1L);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             orderService.createOrder(request);
@@ -147,7 +147,7 @@ class OrderServiceTest {
         event.setPrice(new BigDecimal("100"));
 
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(true);
+        when(redisStockService.decreaseStock(productId, quantity)).thenReturn(1L);
         
         // Simulate MQ failure
         doThrow(new AmqpException("MQ connection failed")).when(rabbitTemplate)

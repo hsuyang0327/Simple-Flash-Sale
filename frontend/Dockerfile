@@ -18,9 +18,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Backend URL used for server-side rewrites (resolved at runtime via env)
-# Default falls back to localhost for local builds
-ENV BACKEND_URL=http://backend:8080
+# Backend URL used for server-side rewrites (baked into routes-manifest at build time)
+# docker-compose.app.yml passes this as a build arg
+ARG BACKEND_URL=http://flash-sale-backend:8080
+ENV BACKEND_URL=$BACKEND_URL
 
 RUN npm run build
 

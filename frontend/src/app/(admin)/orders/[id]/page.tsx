@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { OrderAdminService } from '@/services/orderAdminService';
 import { OrderAdminResponse } from '@/types/order';
 import { ArrowLeft } from 'lucide-react';

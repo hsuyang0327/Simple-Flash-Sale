@@ -3,6 +3,7 @@
 
 # --- Docker & Data (你最關心的部分) ---
 mysql_data/
+redis_data/
 *.rdb
 *.log
 

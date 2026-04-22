@@ -21,8 +21,6 @@ services:
       SPRING_RABBITMQ_PASSWORD: password
     networks:
       - infra-net
-    depends_on:
-      - frontend
 
   frontend:
     build:
@@ -39,6 +37,8 @@ services:
       INTERNAL_API_URL: http://flash-sale-backend:8080/api
     networks:
       - infra-net
+    depends_on:
+      - backend
 
 networks:
   infra-net:

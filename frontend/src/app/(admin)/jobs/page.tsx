@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import JobTable from '@/components/admin/jobs/JobTable';
 import { JobService } from '@/services/jobService';
 import { Zap } from 'lucide-react';
