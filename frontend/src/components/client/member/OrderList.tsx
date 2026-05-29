@@ -9,13 +9,13 @@ import { OrderClientDetailResponse } from '@/types/order';
 
 const STATUS_LABEL: Record<string, string> = {
   PAID: '已付款',
-  FAILED: '已失敗',
+  TIMEOUT: '已逾時',
   CANCELLED: '已取消',
 };
 
 const STATUS_CLASS: Record<string, string> = {
   PAID: 'bg-green-100 text-green-700 border-green-200',
-  FAILED: 'bg-red-100 text-red-700 border-red-200',
+  TIMEOUT: 'bg-red-100 text-red-700 border-red-200',
   CANCELLED: 'bg-gray-100 text-gray-500 border-gray-200',
 };
 

@@ -8,8 +8,18 @@ import { OrderClientDetailResponse } from '@/types/order';
 
 const PAYMENT_DEADLINE_MS = 10 * 60 * 1000; // 與後端 TTL 同步：10 分鐘
 
+function toUtcDate(dateStr: string): Date {
+  // Backend returns LocalDateTime without timezone info (e.g. "2026-04-23T05:04:22").
+  // Docker containers run in UTC, so we append 'Z' to prevent browsers from
+  // misinterpreting it as local time (which would shift the deadline by the UTC offset).
+  if (!dateStr.endsWith('Z') && !dateStr.match(/[+-]\d{2}:\d{2}$/)) {
+    return new Date(dateStr + 'Z');
+  }
+  return new Date(dateStr);
+}
+
 function calcRemaining(createdAt: string): number {
-  const deadline = new Date(createdAt).getTime() + PAYMENT_DEADLINE_MS;
+  const deadline = toUtcDate(createdAt).getTime() + PAYMENT_DEADLINE_MS;
   return Math.max(0, deadline - Date.now());
 }
 

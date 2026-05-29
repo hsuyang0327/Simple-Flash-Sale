@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 /**
  * @author Yang-Hsu
@@ -55,6 +56,7 @@ public class OrderService {
             throw new BusinessException(ResultCode.STOCK_INVALID);
         }
         Order order = new Order();
+        order.setOrderId(UUID.randomUUID().toString());
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
         order.setProductId(event.getProduct().getProductId());
@@ -80,6 +82,7 @@ public class OrderService {
         if (stockResult == -3) throw new BusinessException(ResultCode.STOCK_SOLD_OUT);
         if (stockResult < 0)  throw new BusinessException(ResultCode.STOCK_INVALID);
         Order order = new Order();
+        order.setOrderId(UUID.randomUUID().toString());
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
         order.setProductId(event.getProduct().getProductId());
@@ -112,6 +115,7 @@ public class OrderService {
         }
         // 3. Prepare Order Object (Status: PENDING)
         Order order = new Order();
+        order.setOrderId(UUID.randomUUID().toString()); // pre-assign UUID so MQ message always carries a stable ID
         order.setMemberId(request.getMemberId());
         order.setEventId(request.getEventId());
         order.setProductId(event.getProduct().getProductId());

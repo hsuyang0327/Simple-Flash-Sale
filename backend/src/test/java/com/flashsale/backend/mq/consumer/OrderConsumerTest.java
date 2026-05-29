@@ -2,6 +2,7 @@ package com.flashsale.backend.mq.consumer;
 
 import com.flashsale.backend.config.RabbitConfig;
 import com.flashsale.backend.entity.Order;
+import com.flashsale.backend.repository.DeadLetterLogRepository;
 import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.OrderRepository;
 import com.flashsale.backend.service.RedisOrderService;
@@ -38,6 +39,9 @@ class OrderConsumerTest {
     @Mock
     private RabbitTemplate rabbitTemplate;
 
+    @Mock
+    private DeadLetterLogRepository deadLetterLogRepository;
+
     @InjectMocks
     private OrderConsumer orderConsumer;
 
@@ -72,11 +76,12 @@ class OrderConsumerTest {
 
         verify(redisOrderService, times(1)).setOrderCache(eq(memberId), eq(eventId), any(Order.class)); //step3 : cache order in Redis DB1
 
+        // step4: TTL send is called directly in non-transactional test context
         verify(rabbitTemplate, times(1)).convertAndSend(
                 eq(RabbitConfig.ORDER_EXCHANGE),
                 eq(RabbitConfig.TTL_ROUTING_KEY),
                 any(Order.class)
-        ); //step 4 : send to ttl queue(MQ)
+        );
     }
 
     @Test
@@ -104,7 +109,7 @@ class OrderConsumerTest {
         orderConsumer.processCancelOrder(orderMessage); //action
 
         //Judgement
-        verify(orderRepository, times(1)).save(argThat(o -> "FAILED".equals(o.getStatus()))); // step1 : Verify status updated to FAILED
+        verify(orderRepository, times(1)).save(argThat(o -> "TIMEOUT".equals(o.getStatus()))); // step1 : Verify status updated to TIMEOUT
 
         verify(redisOrderService, times(1)).deleteOrderCache(memberId, eventId); // step2 : Verify Redis order cache evicted
 
@@ -133,5 +138,21 @@ class OrderConsumerTest {
         verify(orderRepository, never()).save(any());
         verify(redisStockService, never()).increaseStock(anyString(), anyInt());
         verify(eventRepository, never()).increaseStock(anyString(), anyInt());
+    }
+
+    @Test
+    @DisplayName("冒等檢查 - 重複訂單訊息應直接跨過")
+    void processCreateOrder_DuplicateMessage_ShouldSkip() {
+        String orderId = UUID.randomUUID().toString();
+
+        Order order = new Order();
+        order.setOrderId(orderId);
+
+        when(orderRepository.existsById(orderId)).thenReturn(true);
+
+        orderConsumer.processCreateOrder(order);
+
+        verify(orderRepository, never()).save(any());
+        verify(eventRepository, never()).decreaseStock(anyString(), anyInt());
     }
 }

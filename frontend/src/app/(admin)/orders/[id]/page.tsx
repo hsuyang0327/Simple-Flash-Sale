@@ -25,6 +25,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       case 'PENDING': return '待處理';
       case 'PAID': return '已付款';
       case 'CANCELLED': return '已取消';
+      case 'TIMEOUT': return '已逾時';
       case 'COMPLETED': return '已完成';
       default: return status;
     }
@@ -35,6 +36,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       case 'PENDING': return 'bg-yellow-500';
       case 'PAID': return 'bg-blue-500';
       case 'CANCELLED': return 'bg-red-500';
+      case 'TIMEOUT': return 'bg-orange-500';
       case 'COMPLETED': return 'bg-green-500';
       default: return 'bg-gray-500';
     }

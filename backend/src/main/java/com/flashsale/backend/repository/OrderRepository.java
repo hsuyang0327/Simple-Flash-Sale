@@ -48,8 +48,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Query(value = "SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.member " +
             "LEFT JOIN FETCH o.product " +
-            "WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED')",
-            countQuery = "SELECT COUNT(o) FROM Order o WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED')")
+            "WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED', 'TIMEOUT')",
+            countQuery = "SELECT COUNT(o) FROM Order o WHERE o.memberId = :memberId AND o.status IN ('PAID', 'FAILED', 'CANCELLED', 'TIMEOUT')")
     Page<Order> findByMemberIdExcludingPending(@Param("memberId") String memberId, Pageable pageable);
 
     /**

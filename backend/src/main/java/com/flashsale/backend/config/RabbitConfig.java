@@ -10,7 +10,9 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Configuration
 public class RabbitConfig {
 
@@ -70,12 +72,18 @@ public class RabbitConfig {
     // === Dead Letter Queues ===
     @Bean
     public Queue orderDeadLetterQueue() {
-        return new Queue(ORDER_DLQ, true);
+        return QueueBuilder.durable(ORDER_DLQ)
+                .withArgument("x-max-length", 10000)
+                .withArgument("x-overflow", "drop-head")
+                .build();
     }
 
     @Bean
     public Queue cancelDeadLetterQueue() {
-        return new Queue(CANCEL_DLQ, true);
+        return QueueBuilder.durable(CANCEL_DLQ)
+                .withArgument("x-max-length", 10000)
+                .withArgument("x-overflow", "drop-head")
+                .build();
     }
 
     // === Bindings ===
@@ -115,6 +123,14 @@ public class RabbitConfig {
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
+        template.setMandatory(true);
+        template.setConfirmCallback((correlationData, ack, cause) -> {
+            if (!ack) {
+                log.error("[MQ] Message not confirmed by broker, cause: {}", cause);
+            }
+        });
+        template.setReturnsCallback(returned ->
+            log.error("[MQ] Message unroutable, routingKey: {}", returned.getRoutingKey()));
         return template;
     }
 

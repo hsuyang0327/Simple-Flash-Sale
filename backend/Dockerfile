@@ -10,6 +10,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 # Copy source and build
+COPY lombok.config .
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 

@@ -22,6 +22,7 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [clicked, setClicked] = useState(false);
   const [soldOut, setSoldOut] = useState(false);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function EventDetailPage() {
 
   const handlePurchase = async () => {
     if (!product) return;
+    setClicked(true);
     setSubmitting(true);
     try {
       await OrderClientService.createOrder(product.eventId, quantity);
@@ -143,8 +145,8 @@ export default function EventDetailPage() {
         ) : (
           <button
             onClick={handlePurchase}
-            disabled={submitting}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all disabled:opacity-50"
+            disabled={clicked || submitting}
+            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? '送出中...' : '立即搶購'}
           </button>

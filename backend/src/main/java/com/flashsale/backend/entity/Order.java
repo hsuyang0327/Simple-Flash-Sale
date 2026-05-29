@@ -1,8 +1,10 @@
 package com.flashsale.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.domain.Persistable;
 
 import java.io.Serial;
 import java.math.BigDecimal;
@@ -16,13 +18,12 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "orders")
-public class Order extends BaseEntity {
+public class Order extends BaseEntity implements Persistable<String> {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "order_id", nullable = false, length = 36)
     private String orderId;
 
@@ -46,6 +47,28 @@ public class Order extends BaseEntity {
 
     @Version
     private Long version;
+
+    @Transient
+    @JsonIgnore
+    private boolean newEntity = true;
+
+    @Override
+    @JsonIgnore
+    public String getId() {
+        return orderId;
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isNew() {
+        return newEntity;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.newEntity = false;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", insertable = false, updatable = false)

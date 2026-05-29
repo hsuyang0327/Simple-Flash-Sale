@@ -1,4 +1,4 @@
-// 登入頁面初版 (src/app/(cilent)/login/page.tsx)
+// 登入頁面初版 (src/app/(client)/login/page.tsx)
 'use client';
 
 import { useState } from 'react';
