@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * @author Yang-Hsu
  * @description JobController
- * @date 2026/2/17 下午1:38
+ * @date 2026/2/17
  */
 @Tag(name = "Job Management", description = "Admin APIs for managing scheduled jobs (Quartz).")
 @Slf4j
@@ -34,6 +34,11 @@ public class JobController {
 
     @Operation(summary = "List All Jobs", description = "Retrieves a list of all scheduled jobs and their current status.")
     @GetMapping
+    /**
+     * @description List all registered Quartz jobs and their statuses
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<List<JobResponse>>> listJobs() {
         log.info("API: List all jobs (Admin)");
         List<JobResponse> jobs = jobService.getAllJobs();
@@ -42,6 +47,11 @@ public class JobController {
 
     @Operation(summary = "Pause Job", description = "Pauses a specific scheduled job.")
     @PostMapping("/pause")
+    /**
+     * @description Pause a running Quartz job
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> pauseJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Pause job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
         jobService.pauseJob(request.getJobName(), request.getJobGroup());
@@ -50,6 +60,11 @@ public class JobController {
 
     @Operation(summary = "Resume Job", description = "Resumes a paused scheduled job.")
     @PostMapping("/resume")
+    /**
+     * @description Resume a paused Quartz job
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> resumeJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Resume job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
         jobService.resumeJob(request.getJobName(), request.getJobGroup());
@@ -58,6 +73,11 @@ public class JobController {
 
     @Operation(summary = "Trigger Job", description = "Manually triggers the execution of a specific job immediately.")
     @PostMapping("/trigger")
+    /**
+     * @description Manually trigger a Quartz job immediately
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> triggerJob(@Valid @RequestBody JobRequest request) {
         log.info("API: Trigger job (Admin): {}.{}", request.getJobGroup(), request.getJobName());
         jobService.triggerJob(request.getJobName(), request.getJobGroup());
@@ -66,6 +86,11 @@ public class JobController {
 
     @Operation(summary = "Update Job Cron Schedule", description = "Updates the cron expression for a specific job to change its schedule.")
     @PostMapping("/cron")
+    /**
+     * @description Update the cron expression of a scheduled Quartz job
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> updateJobCron(@Valid @RequestBody JobCronRequest request) {
         log.info("API: Update job cron (Admin): {}.{} -> {}", request.getJobGroup(), request.getJobName(), request.getCronExpression());
         jobService.updateJobCron(request.getJobName(), request.getJobGroup(), request.getCronExpression());
@@ -74,6 +99,11 @@ public class JobController {
 
     @Operation(summary = "Preload Today's Events", description = "Manually preloads today's active flash sale events into Redis. Use for testing when events start today.")
     @PostMapping("/preload-today")
+    /**
+     * @description Manually trigger preload of today flash-sale events into Redis
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> preloadToday() {
         log.info("API: Manually preload today's events into Redis (Admin)");
         eventService.preloadEventsForToday();

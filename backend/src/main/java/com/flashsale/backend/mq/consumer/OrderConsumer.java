@@ -36,7 +36,7 @@ public class OrderConsumer {
     /**
      * @description Rabbit MQ Consumer (For Create Order)
      * @author Yang-Hsu
-     * @date 2026/2/19 下午8:27
+     * @date 2026/2/19
      */
     @RabbitListener(containerFactory = "noRetryContainerFactory", queues = RabbitConfig.ORDER_QUEUE)
     @Transactional

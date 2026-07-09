@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 /**
  * @description  MappedSuperclass:template for every table,EntityListeners:for listen save or update
  * @author Yang-Hsu
- * @date 2026/1/9 上午 10:52
+ * @date 2026/1/9
  */
 @Getter
 @Setter

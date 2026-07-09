@@ -25,7 +25,7 @@ import java.util.UUID;
 /**
  * @author Yang-Hsu
  * @description OrderService
- * @date 2026/2/17 下午1:25
+ * @date 2026/2/17
  */
 @Slf4j
 @Service
@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description Create Order directly to DB — dev/test only, bypasses Redis and MQ.
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:26
+     * @date 2026/2/17
      */
     @Transactional
     public Order createOrderDB(OrderRequest request) {
@@ -71,7 +71,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description Create Order via Redis stock deduct then direct DB write — dev/test only, bypasses MQ.
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:28
+     * @date 2026/2/17
      */
     @Transactional
     public Order createOrderRedis(OrderRequest request) {
@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description createOrder(Not for Test)
      * @author Yang-Hsu
-     * @date 2026/2/19 下午8:27
+     * @date 2026/2/19
      */
     public Order createOrder(OrderRequest request) {
         log.info("Creating order (MQ) for member: {}, event: {}", request.getMemberId(), request.getEventId());
@@ -136,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description
      * @author Yang-Hsu
-     * @date 2026/2/23 上午12:29
+     * @date 2026/2/23
      */
     public OrderStatusResponse getOrderStatusFromRedis(String memberId, String eventId) {
         Order order = redisOrderService.getOrderCache(memberId, eventId);
@@ -193,7 +193,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description
      * @author Yang-Hsu
-     * @date 2026/2/23 下午1:41
+     * @date 2026/2/23
      */
     public Order getOrderDetailsByIdClient(String memberId, String orderId) {
         Order order = orderRepository.findByIdWithDetails(orderId)
@@ -207,7 +207,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description Search Orders (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:31
+     * @date 2026/2/17
      */
     @Transactional(readOnly = true)
     public Page<Order> searchOrders(String productName, String memberName, Pageable pageable) {
@@ -217,7 +217,7 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description Simulate payment success
      * @author Yang-Hsu
-     * @date 2026/2/21 上午12:06
+     * @date 2026/2/21
      */
     @Transactional
     public Order payOrder(PaymentRequest request) {
@@ -244,13 +244,18 @@ public class OrderServiceImpl implements OrderService {
     /**
      * @description getOrderDetailsByIdAdmin
      * @author Yang-Hsu
-     * @date 2026/2/23 上午12:43
+     * @date 2026/2/23
      */
     public Order getOrderDetailsByIdAdmin(String orderId) {
         return orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new BusinessException(ResultCode.ORDER_NOT_FOUND));
     }
 
+    /**
+     * @description Convert Order entity to client-facing response DTO
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public OrderClientDetailResponse convertToClientResponse(Order order) {
         return OrderClientDetailResponse.builder()
                 .orderId(order.getOrderId())

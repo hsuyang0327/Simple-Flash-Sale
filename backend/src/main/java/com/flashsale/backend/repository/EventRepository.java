@@ -14,16 +14,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * @author Yang-Hsu
  * @description EventRepository
- * @date 2026/2/17 下午9:09
+ * @author Yang-Hsu
+ * @date 2026/2/17
  */
 public interface EventRepository extends JpaRepository<Event, String> {
 
     /**
      * @description decreaseStock for orderService DataBase
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:09
+     * @date 2026/2/17
      */
     @Modifying
     @Transactional
@@ -33,7 +33,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description
      * @author Yang-Hsu
-     * @date 2026/2/22 上午2:36
+     * @date 2026/2/22
      */
     @Modifying
     @Transactional
@@ -43,7 +43,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description When update Product Information check
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:10
+     * @date 2026/2/17
      */
     @Query("SELECT COUNT(e) > 0 FROM Event e WHERE e.product.productId = :productId")
     boolean existsByProductId(@Param("productId") String productId);
@@ -51,7 +51,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description find by product for event lisy
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:11
+     * @date 2026/2/17
      */
     @Query("SELECT e FROM Event e WHERE e.product.productId = :productId")
     Page<Event> findByProductId(@Param("productId") String productId, Pageable pageable);
@@ -59,7 +59,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description when delete product, delete event first
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:12
+     * @date 2026/2/17
      */
     @Modifying
     @Transactional
@@ -69,7 +69,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description countActiveEventsByProductId
      * @author Yang-Hsu
-     * @date 2026/2/17 下午11:22
+     * @date 2026/2/17
      */
     @Query("SELECT COUNT(e) FROM Event e WHERE e.product.productId = :productId AND e.status = 1")
     long countActiveEventsByProductId(@Param("productId") String productId);
@@ -77,7 +77,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
     /**
      * @description findActiveEventsWithActiveProducts
      * @author Yang-Hsu
-     * @date 2026/2/18 下午7:13
+     * @date 2026/2/18
      */
     @Query("SELECT new com.flashsale.backend.dto.response.EventProductDTO(" +
             "p.productId, " +

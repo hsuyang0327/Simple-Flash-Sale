@@ -12,16 +12,16 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 /**
- * @author Yang-Hsu
  * @description OrderRepository
- * @date 2026/2/7 下午10:40
+ * @author Yang-Hsu
+ * @date 2026/2/7
  */
 public interface OrderRepository extends JpaRepository<Order, String> {
 
     /**
      * @description findByIdForUpdate
      * @author Yang-Hsu
-     * @date 2026/2/20 下午11:41
+     * @date 2026/2/20
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM Order o WHERE o.orderId = :orderId")
@@ -30,7 +30,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     /**
      * @description findByIdWithDetails
      * @author Yang-Hsu
-     * @date 2026/2/23 上午12:43
+     * @date 2026/2/23
      */
     @Query("SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.member " +
@@ -55,7 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     /**
      * @description Search Orders (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/12 下午9:53
+     * @date 2026/2/12
      */
     @Query("SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.member m " +

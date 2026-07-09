@@ -9,14 +9,14 @@ import java.util.Set;
 /**
  * @description BeanCopyUtil
  * @author Yang-Hsu
- * @date 2026/2/9 上午12:18
+ * @date 2026/2/9
  */
 public class BeanCopyUtil {
 
     /**
      * @description getNullPropertyNames
      * @author Yang-Hsu
-     * @date 2026/2/9 上午12:18
+     * @date 2026/2/9
      */
     public static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);

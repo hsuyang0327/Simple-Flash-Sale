@@ -6,6 +6,11 @@ import com.flashsale.backend.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * @description Member management service interface — registration, profile, admin CRUD
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 public interface MemberService {
 
     Member addMember(MemberRegistRequest req);

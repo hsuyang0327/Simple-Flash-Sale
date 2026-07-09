@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * @description repository method for member
  * @author Yang-Hsu
- * @date 2026/1/9 上午 11:22
+ * @date 2026/1/9
  */
 @Repository
 public interface MemberRepository extends JpaRepository<Member, String> {

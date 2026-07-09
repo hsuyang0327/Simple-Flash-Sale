@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Yang-Hsu
  * @description EventService
- * @date 2026/2/17 下午9:13
+ * @date 2026/2/17
  */
 @Slf4j
 @Service
@@ -46,7 +46,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description get total event when search product detail
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:14
+     * @date 2026/2/17
      */
     @Transactional(readOnly = true)
     public Page<Event> getEventsByProductId(String productId, Pageable pageable) {
@@ -56,7 +56,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description createEvent
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:16
+     * @date 2026/2/17
      */
     @Transactional
     public Event createEvent(EventRequest request) {
@@ -73,7 +73,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description getEventById for event update
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:14
+     * @date 2026/2/17
      */
     @Transactional(readOnly = true)
     public Event getEventById(String eventId) {
@@ -84,7 +84,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description updateEvent
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:16
+     * @date 2026/2/17
      */
     @Transactional
     public Event updateEvent(String eventId, EventRequest request) {
@@ -109,7 +109,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description deleteEvent
      * @author Yang-Hsu
-     * @date 2026/2/17 下午9:18
+     * @date 2026/2/17
      */
     @Transactional
     public void deleteEvent(String eventId) {
@@ -136,7 +136,7 @@ public class EventServiceImpl implements EventService {
     /**
      * @description
      * @author Yang-Hsu
-     * @date 2026/2/18 下午7:26
+     * @date 2026/2/18
      */
     @Transactional(readOnly = true)
     public void preloadEventsForTomorrow() {

@@ -8,6 +8,11 @@ import com.flashsale.backend.entity.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * @description Flash-sale order service interface — Redis stock decrement, MQ publish, status polling
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 public interface OrderService {
 
     Order createOrderDB(OrderRequest request);

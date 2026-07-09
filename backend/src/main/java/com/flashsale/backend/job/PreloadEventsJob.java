@@ -8,6 +8,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.stereotype.Component;
 
+/**
+ * @description Quartz job to preload active flash-sale events into Redis before sale starts
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -16,6 +21,11 @@ public class PreloadEventsJob implements Job {
     private final EventService eventService;
 
     @Override
+    /**
+     * @description Execute event preloading into Redis for today and tomorrow
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("Starting PreloadEventsJob...");
         try {

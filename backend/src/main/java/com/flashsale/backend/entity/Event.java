@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * @description Event Entity
  * @author Yang-Hsu
- * @date 2026/2/17 下午10:04
+ * @date 2026/2/17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @description Service for Certification
  * @author Yang-Hsu
- * @date 2026/1/12 上午 10:50
+ * @date 2026/1/12
  */
 @Slf4j
 @Service
@@ -30,7 +30,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * @description Login logical for generate at and rt
      * @author Yang-Hsu
-     * @date 2026/1/12 上午 10:51
+     * @date 2026/1/12
      */
     @Transactional(readOnly = true)
     public JwtResponse login(String memberEmail, String memberPwd) {
@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
     /**
      * @description Refresh logical, base on token rotation , it will generate new at and rt
      * @author Yang-Hsu
-     * @date 2026/1/12 上午 10:52
+     * @date 2026/1/12
      */
     public JwtResponse refresh(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {

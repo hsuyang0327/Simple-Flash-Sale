@@ -25,9 +25,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author Yang-Hsu
  * @description OrderController
- * @date 2026/2/12 下午9:43
+ * @author Yang-Hsu
+ * @date 2026/2/12
  */
 @Tag(name = "Order Management", description = "APIs for creating, viewing, and managing orders.")
 @Slf4j
@@ -39,6 +39,11 @@ public class OrderController {
 
     @Operation(summary = "Create Order (Client)", description = "Creates a new order for a flash sale event. Requires JWT authentication.")
     @PostMapping("/api/client/orders")
+    /**
+     * @description Create a flash-sale order — decrement Redis stock and publish to MQ
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> createOrder(@Valid @RequestBody OrderRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         // Override client-supplied memberId with the value from JWT to prevent order spoofing
@@ -50,6 +55,11 @@ public class OrderController {
 
     @Operation(summary = "Get My Orders (Client)", description = "Retrieves a paginated list of orders for the authenticated user. Requires JWT authentication.")
     @GetMapping("/api/client/orders")
+    /**
+     * @description Get paginated order list for current authenticated member
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<OrderClientDetailResponse>>> getMyOrders(
             @Parameter(description = "Pagination information")
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -63,6 +73,11 @@ public class OrderController {
 
     @Operation(summary = "Cancel Order (Client)", description = "Cancels a PENDING order and restores stock. Requires JWT authentication.")
     @PatchMapping("/api/client/orders/{id}/cancel")
+    /**
+     * @description Cancel an order by ID for current member
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> cancelOrder(
             @Parameter(description = "ID of the order to cancel") @PathVariable String id) {
         String memberId = SecurityUtils.getCurrentUserId();
@@ -74,6 +89,11 @@ public class OrderController {
 
     @Operation(summary = "Get Order (Client)", description = "Retrieves details of a specific order for the authenticated user. Requires JWT authentication.")
     @GetMapping("/api/client/orders/{id}")
+    /**
+     * @description Get order detail by ID for current member
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> getOrder(
             @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         String memberId = SecurityUtils.getCurrentUserId();
@@ -85,6 +105,11 @@ public class OrderController {
 
     @Operation(summary = "Get Order Status (Client)", description = "Checks the authenticated user's order creation status from Redis. Requires JWT authentication.")
     @GetMapping("/api/client/orders/status")
+    /**
+     * @description Get order detail by ID for current member
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderStatusResponse>> getOrderStatus(
             @Parameter(description = "Event ID to check order status for") @RequestParam String eventId) {
         String currentUserId = SecurityUtils.getCurrentUserId();
@@ -96,6 +121,11 @@ public class OrderController {
 
     @Operation(summary = "Search Orders (Admin)", description = "Searches and retrieves a paginated list of orders based on product or member name. Requires admin privileges.")
     @GetMapping("/api/admin/orders")
+    /**
+     * @description Search orders with filters for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<OrderAdminResponse>>> searchOrders(
             @Parameter(description = "Filter by product name (optional)") @RequestParam(required = false) String productName,
             @Parameter(description = "Filter by member name (optional)") @RequestParam(required = false) String memberName,
@@ -108,6 +138,11 @@ public class OrderController {
 
     @Operation(summary = "Get Order (Admin)", description = "Retrieves detailed information about a specific order by its ID. Requires admin privileges.")
     @GetMapping("/api/admin/orders/{id}")
+    /**
+     * @description Get order detail by ID for current member
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderAdminResponse>> getOrderAdmin(
             @Parameter(description = "ID of the order to retrieve") @PathVariable String id) {
         log.info("API: Get order (Admin): orderId={}", id);

@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * @description Filter every request is Rt JWT valid ot not
  * @author Yang-Hsu
- * @date 2026/1/8 下午 04:26
+ * @date 2026/1/8
  */
 @Slf4j
 @Component
@@ -36,6 +36,11 @@ public class AuthJwtFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Override
+    /**
+     * @description Extract JWT from cookie, validate, and set authentication in SecurityContext
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 

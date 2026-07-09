@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * @description ProductClientResponse
  * @author Yang-Hsu
- * @date 2026/2/17 下午1:35
+ * @date 2026/2/17
  */
 @Data
 @Builder

@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * @author Yang-Hsu
  * @description ProductController
- * @date 2026/2/8 下午10:46
+ * @author Yang-Hsu
+ * @date 2026/2/8
  */
 @Tag(name = "Product Management", description = "APIs for managing products.")
 @Slf4j
@@ -36,6 +36,11 @@ public class ProductController {
 
     @Operation(summary = "List Products (Client)", description = "Retrieves a paginated list of available products for clients. This is a public endpoint.")
     @GetMapping("/api/client/open/products")
+    /**
+     * @description List available products with pagination for client
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<ProductClientResponse>>> listProducts(
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Get all products (Client)");
@@ -46,6 +51,11 @@ public class ProductController {
 
     @Operation(summary = "Get Product (Client)", description = "Retrieves detailed information about a specific product. This is a public endpoint.")
     @GetMapping("/api/client/open/products/{id}")
+    /**
+     * @description Get product detail by ID for client
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<ProductClientResponse>> getProduct(
             @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Client): {}", id);
@@ -55,6 +65,11 @@ public class ProductController {
 
     @Operation(summary = "Get Product (Admin)", description = "Retrieves detailed admin-level information about a specific product. Requires admin privileges.")
     @GetMapping("/api/admin/products/{id}")
+    /**
+     * @description Get product detail by ID for client
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<ProductAdminResponse>> getProductAdmin(
             @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Admin): {}", id);
@@ -64,6 +79,11 @@ public class ProductController {
 
     @Operation(summary = "Create Product (Admin)", description = "Creates a new product. Requires admin privileges.")
     @PostMapping("/api/admin/products")
+    /**
+     * @description Create a new product for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<ProductAdminResponse>> createProduct(@Valid @RequestBody ProductRequest request) {
         log.info("API: Create product (Admin)");
         Product createdProduct = productService.createProduct(request);
@@ -72,6 +92,11 @@ public class ProductController {
 
     @Operation(summary = "Update Product (Admin)", description = "Updates an existing product. Requires admin privileges.")
     @PutMapping("/api/admin/products/{productId}")
+    /**
+     * @description Update an existing product for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<ProductAdminResponse>> updateProduct(
             @Parameter(description = "ID of the product to update") @PathVariable String productId,
             @Valid @RequestBody ProductRequest request) {
@@ -82,6 +107,11 @@ public class ProductController {
 
     @Operation(summary = "Delete Product (Admin)", description = "Deletes a product by its ID. Requires admin privileges.")
     @DeleteMapping("/api/admin/products/{id}")
+    /**
+     * @description Delete a product by ID for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @Parameter(description = "ID of the product to delete") @PathVariable String id) {
         log.info("API: Delete product (Admin): {}", id);
@@ -91,6 +121,11 @@ public class ProductController {
 
     @Operation(summary = "Search Products (Admin)", description = "Searches for products by name. Requires admin privileges.")
     @GetMapping("/api/admin/products/search")
+    /**
+     * @description Search products by name with pagination for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<ProductAdminResponse>>> searchProducts(
             @Parameter(description = "The name of the product to search for") @RequestParam String productName,
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {

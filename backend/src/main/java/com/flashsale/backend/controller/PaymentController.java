@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @description
  * @author Yang-Hsu
- * @date 2026/2/20 下午7:19
+ * @date 2026/2/20
  */
 @Tag(name = "Payment", description = "APIs for processing order payments.")
 @Slf4j
@@ -34,6 +34,11 @@ public class PaymentController {
 
     @Operation(summary = "Process Payment", description = "Simulates the payment process for an order, changing its status from PENDING to PAID. Requires JWT authentication.")
     @PostMapping("/pay")
+    /**
+     * @description Mark an order as paid
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<OrderClientDetailResponse>> payOrder(@Valid @RequestBody PaymentRequest request) {
         String memberId = SecurityUtils.getCurrentUserId();
         // Override client-supplied memberId with the value from JWT to prevent IDOR

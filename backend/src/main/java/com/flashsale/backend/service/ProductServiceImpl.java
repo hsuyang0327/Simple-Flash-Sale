@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author Yang-Hsu
  * @description ProductService
- * @date 2026/2/8 上午1:06
+ * @date 2026/2/8
  */
 @Slf4j
 @Service
@@ -30,7 +30,7 @@ public class ProductServiceImpl implements ProductService {
     /**
      * @description GetAllProducts
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:06
+     * @date 2026/2/8
      */
     @Transactional(readOnly = true)
     public Page<Product> getAllProducts(Pageable pageable) {
@@ -40,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
     /**
      * @description GetProductById
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
+     * @date 2026/2/8
      */
     @Transactional(readOnly = true)
     public Product getProductById(String productId) {
@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
     /**
      * @description CreateProduct
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
+     * @date 2026/2/8
      */
     @Transactional
     public Product createProduct(ProductRequest request) {
@@ -67,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     /**
      * @description UpdateProduct
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:07
+     * @date 2026/2/8
      */
     @Transactional
     public Product updateProduct(String productId, ProductRequest request) {
@@ -92,7 +92,7 @@ public class ProductServiceImpl implements ProductService {
     /**
      * @description DeleteProduct
      * @author Yang-Hsu
-     * @date 2026/2/8 上午1:08
+     * @date 2026/2/8
      */
     @Transactional
     public void deleteProduct(String productId) {

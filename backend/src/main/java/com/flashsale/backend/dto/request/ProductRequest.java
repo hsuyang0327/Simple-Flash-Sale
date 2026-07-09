@@ -9,7 +9,7 @@ import lombok.Data;
 /**
  * @description ProductRequest
  * @author Yang-Hsu
- * @date 2026/2/17 下午1:36
+ * @date 2026/2/17
  */
 @Data
 public class ProductRequest {

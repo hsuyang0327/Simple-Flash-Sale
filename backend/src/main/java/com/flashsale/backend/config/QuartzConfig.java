@@ -9,12 +9,17 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @description Quartz Register
  * @author Yang-Hsu
- * @date 2026/2/18 下午7:26
+ * @date 2026/2/18
  */
 @Configuration
 public class QuartzConfig {
 
     @Bean
+    /**
+     * @description Register SystemHeartbeatJob as a durable Quartz JobDetail
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public JobDetail testJobDetail() {
         return JobBuilder.newJob(SystemHeartbeatJob.class)
                 .withIdentity("systemHeartbeatJob", "SYSTEM_GROUP")
@@ -23,6 +28,11 @@ public class QuartzConfig {
     }
 
     @Bean
+    /**
+     * @description Register PreloadEventsJob as a durable Quartz JobDetail
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public JobDetail preloadEventsJobDetail() {
         return JobBuilder.newJob(PreloadEventsJob.class)
                 .withIdentity("preloadEventsJob", "EVENT_GROUP")

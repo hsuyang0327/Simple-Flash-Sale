@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * @description DateRangeAware interface for validation
  * @author Yang-Hsu
- * @date 2026/2/8 下午4:48
+ * @date 2026/2/8
  */
 public interface DateRangeAware {
     LocalDateTime getStartTime();

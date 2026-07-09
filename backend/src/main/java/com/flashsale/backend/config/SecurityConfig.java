@@ -25,7 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 /**
  * @description http config to run filter and allow which url can go in
  * @author Yang-Hsu
- * @date 2026/1/8 下午 04:47
+ * @date 2026/1/8
  */
 @Configuration
 @EnableWebSecurity
@@ -36,6 +36,11 @@ public class SecurityConfig {
     private final AuthJwtFilter authJwtFilter;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @description Inject AuthJwtFilter and ObjectMapper dependencies
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public SecurityConfig(AuthJwtFilter authJwtFilter, ObjectMapper objectMapper) {
         this.authJwtFilter = authJwtFilter;
         this.objectMapper = objectMapper;
@@ -49,6 +54,11 @@ public class SecurityConfig {
     };
 
     @Bean
+    /**
+     * @description Configure Spring Security filter chain — CSRF, CORS, stateless session, JWT filter, and endpoint access rules
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -81,7 +91,7 @@ public class SecurityConfig {
     /**
      * @description url site setting
      * @author Yang-Hsu
-     * @date 2026/1/8 下午 04:54
+     * @date 2026/1/8
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

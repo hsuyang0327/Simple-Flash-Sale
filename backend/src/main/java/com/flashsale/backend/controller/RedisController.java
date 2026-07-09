@@ -21,6 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @description Debug controller for directly inspecting Redis stock and order cache data
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 @Tag(name = "Redis Data Access", description = "APIs for directly accessing Redis data, such as preheated products and cached order status.")
 @RestController
 @RequestMapping("/api/client/open/redis")
@@ -37,6 +42,11 @@ public class RedisController {
 
     @Operation(summary = "Get Preheated Products", description = "Retrieves a paginated list of products that have been preheated into Redis cache.")
     @GetMapping("/preheated-products")
+    /**
+     * @description Get all preheated product stock data from Redis DB0
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<Map<Object, Object>>>> getPreheatedProducts(
             @Parameter(description = "Pagination information") Pageable pageable) {
         long start = pageable.getOffset();
@@ -61,6 +71,11 @@ public class RedisController {
 
     @Operation(summary = "Get Single Preheated Product", description = "Retrieves a single preheated product from Redis cache by productId.")
     @GetMapping("/product/{productId}")
+    /**
+     * @description Get a single preheated product stock entry from Redis DB0 by key
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Map<Object, Object>>> getPreheatedProduct(
             @PathVariable String productId) {
         String key = "productId:" + productId;

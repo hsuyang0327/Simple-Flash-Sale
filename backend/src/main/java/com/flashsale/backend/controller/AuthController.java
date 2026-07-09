@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @author Yang-Hsu
  * @description For Certification Controller
- * @date 2026/1/12 上午 10:44
+ * @date 2026/1/12
  */
 @Tag(name = "Authentication", description = "APIs for user authentication, including login, logout, and token refresh.")
 @Slf4j
@@ -42,6 +42,11 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/login")
+    /**
+     * @description Authenticate member credentials and set JWT cookies
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest req) {
         log.info("API: Login (Client): {}", req.getEmail());
 
@@ -64,6 +69,11 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     })
     @PostMapping("/refresh")
+    /**
+     * @description Refresh access token using the refresh token cookie
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<String>> refresh(HttpServletRequest request) {
         log.info("API: Refresh token (Client)");
 
@@ -86,6 +96,11 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Logout successful")
     })
     @PostMapping("/logout")
+    /**
+     * @description Clear JWT cookies and invalidate session
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<String>> logout(HttpServletRequest request) {
         String token = jwtUtils.getJwtFromCookies(request, "access_token");
         String userId = (token != null && !token.isEmpty()) ? jwtUtils.getMemberIdFromToken(token) : null;

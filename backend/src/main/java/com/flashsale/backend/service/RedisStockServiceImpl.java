@@ -62,6 +62,11 @@ public class RedisStockServiceImpl implements RedisStockService {
         }
     }
 
+    /**
+     * @description Atomically restore stock in Redis DB0 via Lua script (rollback use)
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public void increaseStock(String productId, int quantity) {
         String key = "productId:" + productId;
         try {

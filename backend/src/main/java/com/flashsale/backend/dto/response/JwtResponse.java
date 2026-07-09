@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 /**
  * @description JwtResponse
  * @author Yang-Hsu
- * @date 2026/1/12 上午 10:40
+ * @date 2026/1/12
  */
 @Data
 @Builder

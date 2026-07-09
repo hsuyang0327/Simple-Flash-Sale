@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * @description LoginRequest
  * @author Yang-Hsu
- * @date 2026/2/21 下午4:29
+ * @date 2026/2/21
  */
 @Data
 public class LoginRequest {

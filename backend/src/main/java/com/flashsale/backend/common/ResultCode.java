@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * @description Code for Api Response
  * @author Yang-Hsu
- * @date 2026/1/9 上午 09:50
+ * @date 2026/1/9
  */
 @Getter
 public enum ResultCode {

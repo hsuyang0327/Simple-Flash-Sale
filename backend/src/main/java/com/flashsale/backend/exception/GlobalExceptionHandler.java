@@ -12,13 +12,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * @description intercept service share exception
  * @author Yang-Hsu
- * @date 2026/1/9 下午 12:00
+ * @date 2026/1/9
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
+    /**
+     * @description Handle BusinessException and map to appropriate HTTP response
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
         ResultCode rc = e.getResultCode();
         // We use warn level for business logic violations as they are usually not system failures
@@ -35,6 +40,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    /**
+     * @description Handle @Valid validation failures and map field errors to ResultCode
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
         String errorTagName = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
 
@@ -51,6 +61,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
+    /**
+     * @description Handle unexpected system exceptions and return SYSTEM_ERROR response
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ApiResponse<Void> handleException(Exception e) {
         // Use error level for unexpected system failures and include the stack trace
         log.error("Unexpected system error occurred: ", e);

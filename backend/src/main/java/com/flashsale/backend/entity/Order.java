@@ -10,9 +10,9 @@ import java.io.Serial;
 import java.math.BigDecimal;
 
 /**
- * @author Yang-Hsu
  * @description Order
- * @date 2026/2/17 下午1:34
+ * @author Yang-Hsu
+ * @date 2026/2/17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -54,12 +54,22 @@ public class Order extends BaseEntity implements Persistable<String> {
 
     @Override
     @JsonIgnore
+    /**
+     * @description Return the order UUID — required by Persistable interface
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public String getId() {
         return orderId;
     }
 
     @Override
     @JsonIgnore
+    /**
+     * @description Return true if order has not been persisted yet
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public boolean isNew() {
         return newEntity;
     }

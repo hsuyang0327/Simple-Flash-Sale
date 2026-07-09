@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * @author Yang-Hsu
  * @description JobService
- * @date 2026/2/17 下午1:22
+ * @date 2026/2/17
  */
 @Slf4j
 @Service
@@ -31,7 +31,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Get all jobs (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:22
+     * @date 2026/2/17
      */
     public List<JobResponse> getAllJobs() {
         List<JobResponse> jobList = new ArrayList<>();
@@ -78,7 +78,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Pause job (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:23
+     * @date 2026/2/17
      */
     public void pauseJob(String jobName, String jobGroup) {
         try {
@@ -93,7 +93,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Resume job (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:23
+     * @date 2026/2/17
      */
     public void resumeJob(String jobName, String jobGroup) {
         try {
@@ -108,7 +108,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Trigger job (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:24
+     * @date 2026/2/17
      */
     public void triggerJob(String jobName, String jobGroup) {
         try {
@@ -123,7 +123,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Update job cron (Admin)
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:24
+     * @date 2026/2/17
      */
     public void updateJobCron(String jobName, String jobGroup, String cronExpression) {
         try {
@@ -166,7 +166,7 @@ public class JobServiceImpl implements JobService {
     /**
      * @description Convert Date to LocalDateTime
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:24
+     * @date 2026/2/17
      */
     private LocalDateTime toLocalDateTime(Date date) {
         if (date == null) return null;

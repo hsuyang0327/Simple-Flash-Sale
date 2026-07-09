@@ -8,6 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @description Annotation for validating that a class implementing DateRangeAware has a valid date range
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 @Constraint(validatedBy = DateRangeValidator.class)//action into DateRangeValidator
 @Target({ElementType.TYPE}) //target
 @Retention(RetentionPolicy.RUNTIME) //when code is running

@@ -29,6 +29,11 @@ public class DashboardController {
 
     @Operation(summary = "Get Redis Stock Overview", description = "Returns all preheated products with Redis stock vs DB stock for admin monitoring.")
     @GetMapping("/stocks")
+    /**
+     * @description Retrieve stock comparison between Redis DB0 and MySQL for admin dashboard
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<List<DashboardStockResponse>>> getStocks() {
         List<DashboardStockResponse> stocks = dashboardService.getStocks();
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, stocks));

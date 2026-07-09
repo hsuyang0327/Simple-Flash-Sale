@@ -6,10 +6,20 @@ import org.springframework.lang.NonNull;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
+/**
+ * @description Quartz job for system heartbeat — periodic health check logging
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 @Slf4j
 @Component
 public class SystemHeartbeatJob extends QuartzJobBean {
     @Override
+    /**
+     * @description Log a periodic heartbeat to confirm scheduler is alive
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     protected void executeInternal(@NonNull JobExecutionContext context) {
         String jobName = context.getJobDetail().getKey().getName();
         String triggerName = context.getTrigger().getKey().getName();

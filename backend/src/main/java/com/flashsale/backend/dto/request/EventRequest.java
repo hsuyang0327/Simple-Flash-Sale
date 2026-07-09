@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 /**
  * @description EventRequest
  * @author Yang-Hsu
- * @date 2026/2/21 下午4:29
+ * @date 2026/2/21
  */
 @Data
 @ValidDateRange(message = "END_TIME_INVALID")

@@ -5,6 +5,11 @@ import com.flashsale.backend.entity.Event;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * @description Flash-sale event management service interface
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 public interface EventService {
 
     Page<Event> getEventsByProductId(String productId, Pageable pageable);

@@ -34,17 +34,32 @@ public class RabbitConfig {
 
     // === Exchanges ===
     @Bean
+    /**
+     * @description Declare direct exchange for flash-sale order routing
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public DirectExchange orderExchange() {
         return new DirectExchange(ORDER_EXCHANGE);
     }
 
     @Bean
+    /**
+     * @description Declare direct exchange for dead-letter routing
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public DirectExchange deadLetterExchange() {
         return new DirectExchange(DEAD_LETTER_EXCHANGE);
     }
 
     // === Queues ===
     @Bean
+    /**
+     * @description Declare queue for flash-sale order creation messages
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Queue orderQueue() {
         return QueueBuilder.durable(ORDER_QUEUE)
                 .withArgument("x-dead-letter-exchange", DEAD_LETTER_EXCHANGE)
@@ -53,6 +68,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    /**
+     * @description Declare queue for order cancellation messages
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Queue cancelQueue() {
         return QueueBuilder.durable(CANCEL_QUEUE)
                 .withArgument("x-dead-letter-exchange", DEAD_LETTER_EXCHANGE)
@@ -61,6 +81,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    /**
+     * @description Declare TTL queue for order timeout auto-cancellation
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Queue ttlQueue() {
         return QueueBuilder.durable(TTL_QUEUE)
                 .withArgument("x-dead-letter-exchange", ORDER_EXCHANGE)
@@ -71,6 +96,11 @@ public class RabbitConfig {
 
     // === Dead Letter Queues ===
     @Bean
+    /**
+     * @description Declare dead-letter queue for failed order messages
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Queue orderDeadLetterQueue() {
         return QueueBuilder.durable(ORDER_DLQ)
                 .withArgument("x-max-length", 10000)
@@ -79,6 +109,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    /**
+     * @description Declare dead-letter queue for failed cancel messages
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Queue cancelDeadLetterQueue() {
         return QueueBuilder.durable(CANCEL_DLQ)
                 .withArgument("x-max-length", 10000)
@@ -88,38 +123,73 @@ public class RabbitConfig {
 
     // === Bindings ===
     @Bean
+    /**
+     * @description Bind order queue to order exchange with routing key
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Binding bindingOrderQueue() {
         return BindingBuilder.bind(orderQueue()).to(orderExchange()).with(ORDER_ROUTING_KEY);
     }
 
     @Bean
+    /**
+     * @description Bind cancel queue to order exchange with routing key
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Binding bindingCancelQueue() {
         return BindingBuilder.bind(cancelQueue()).to(orderExchange()).with(CANCEL_ROUTING_KEY);
     }
 
     @Bean
+    /**
+     * @description Bind TTL queue to order exchange with routing key
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Binding bindingTtlQueue() {
         return BindingBuilder.bind(ttlQueue()).to(orderExchange()).with(TTL_ROUTING_KEY);
     }
 
     // === DLQ Bindings ===
     @Bean
+    /**
+     * @description Bind order DLQ to dead-letter exchange
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Binding bindingOrderDlq() {
         return BindingBuilder.bind(orderDeadLetterQueue()).to(deadLetterExchange()).with(ORDER_ROUTING_KEY);
     }
 
     @Bean
+    /**
+     * @description Bind cancel DLQ to dead-letter exchange
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public Binding bindingCancelDlq() {
         return BindingBuilder.bind(cancelDeadLetterQueue()).to(deadLetterExchange()).with(CANCEL_ROUTING_KEY);
     }
 
     // === General Config ===
     @Bean
+    /**
+     * @description Configure Jackson JSON message converter for RabbitMQ
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
     @Bean
+    /**
+     * @description Configure RabbitTemplate with JSON converter and publisher confirms
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());

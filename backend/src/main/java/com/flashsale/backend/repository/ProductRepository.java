@@ -6,16 +6,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
+ * @description ProductRepository
  * @author Yang-Hsu
- * @description
- * @date 2026/2/7 下午10:32
+ * @date 2026/2/7
  */
 public interface ProductRepository extends JpaRepository<Product, String> {
 
     /**
      * @description Search products by name
      * @author Yang-Hsu
-     * @date 2026/2/17 下午1:32
+     * @date 2026/2/17
      */
     Page<Product> findByProductNameContaining(String productName, Pageable pageable);
 }

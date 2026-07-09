@@ -30,6 +30,11 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final EventRepository eventRepository;
 
+    /**
+     * @description Compare Redis DB0 stock vs MySQL event stock for all active events
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public List<DashboardStockResponse> getStocks() {
         Set<String> keys = redisTemplateDb0.keys("productId:*");
         List<DashboardStockResponse> result = new ArrayList<>();

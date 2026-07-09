@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * @description JobRequest
  * @author Yang-Hsu
- * @date 2026/2/17 下午1:37
+ * @date 2026/2/17
  */
 @Data
 public class JobRequest {

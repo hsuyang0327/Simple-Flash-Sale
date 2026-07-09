@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author Yang-Hsu
  * @description MemberService
- * @date 2026/1/9 下午 01:54
+ * @date 2026/1/9
  */
 @Slf4j
 @Service
@@ -31,7 +31,7 @@ public class MemberServiceImpl implements MemberService {
     /**
      * @description Register a new member
      * @author Yang-Hsu
-     * @date 2026/1/9 下午 01:54
+     * @date 2026/1/9
      */
     @Transactional
     public Member addMember(MemberRegistRequest req) {
@@ -50,7 +50,7 @@ public class MemberServiceImpl implements MemberService {
     /**
      * @description Find by memberId
      * @author Yang-Hsu
-     * @date 2026/1/9 下午 01:55
+     * @date 2026/1/9
      */
     @Transactional(readOnly = true)
     public Member getMemberById(String memberId) {
@@ -64,7 +64,7 @@ public class MemberServiceImpl implements MemberService {
     /**
      * @description
      * @author Yang-Hsu
-     * @date 2026/1/9 下午 01:55
+     * @date 2026/1/9
      */
     @Transactional
     public Member updateMember(String memberId, MemberUpdateRequest req) {
@@ -84,7 +84,7 @@ public class MemberServiceImpl implements MemberService {
     /**
      * @description Delete member by memberId
      * @author Yang-Hsu
-     * @date 2026/1/9 下午 01:56
+     * @date 2026/1/9
      */
     @Transactional
     public void deleteMember(String memberId) {
@@ -100,7 +100,7 @@ public class MemberServiceImpl implements MemberService {
     /**
      * @description Find all Member
      * @author Yang-Hsu
-     * @date 2026/1/9 下午 01:57
+     * @date 2026/1/9
      */
     @Transactional(readOnly = true)
     public Page<Member> getAllMembers(Pageable pageable) {

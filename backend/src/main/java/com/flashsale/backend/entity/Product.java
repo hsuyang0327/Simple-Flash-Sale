@@ -9,7 +9,7 @@ import java.io.Serial;
 /**
  * @description Product
  * @author Yang-Hsu
- * @date 2026/2/17 下午1:33
+ * @date 2026/2/17
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

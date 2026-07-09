@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * @description MemberResponse
  * @author Yang-Hsu
- * @date 2026/2/6 下午2:17
+ * @date 2026/2/6
  */
 @Data
 @Builder

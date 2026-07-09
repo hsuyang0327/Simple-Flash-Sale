@@ -5,6 +5,11 @@ import com.flashsale.backend.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+/**
+ * @description Product management service interface
+ * @author Yang-Hsu
+ * @date 2026/7/9
+ */
 public interface ProductService {
 
     Page<Product> getAllProducts(Pageable pageable);

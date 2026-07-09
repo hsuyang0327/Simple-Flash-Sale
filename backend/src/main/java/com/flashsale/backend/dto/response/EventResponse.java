@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * @description EventResponse
  * @author Yang-Hsu
- * @date 2026/2/21 下午4:30
+ * @date 2026/2/21
  */
 @Data
 @Builder

@@ -7,9 +7,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * @author Yang-Hsu
  * @description OrderClientResponse
- * @date 2026/2/23 下午1:49
+ * @author Yang-Hsu
+ * @date 2026/2/23
  */
 @Data
 @Builder

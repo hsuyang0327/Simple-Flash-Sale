@@ -7,8 +7,9 @@ import lombok.EqualsAndHashCode;
 import java.io.Serial;
 
 /**
- * @author Yang-Hsu
  * @description DeadLetterLog — records orders that exhausted all MQ retries and landed in DLQ
+ * @author Yang-Hsu
+ * @date 2026/7/9
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

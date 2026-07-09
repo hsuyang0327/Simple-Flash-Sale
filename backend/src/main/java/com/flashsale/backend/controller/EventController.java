@@ -20,9 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @author Yang-Hsu
  * @description EventController
- * @date 2026/2/17 下午8:57
+ * @author Yang-Hsu
+ * @date 2026/2/17
  */
 @Tag(name = "Event Management", description = "Admin APIs for managing flash sale events.")
 @Slf4j
@@ -34,6 +34,11 @@ public class EventController {
 
     @Operation(summary = "List Events", description = "Retrieves a paginated list of events for a specific product.")
     @GetMapping("/api/admin/events")
+    /**
+     * @description List all flash-sale events with pagination for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Page<EventResponse>>> listEventsAdmin(
             @Parameter(description = "ID of the product to filter events by") @RequestParam String productId,
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -45,6 +50,11 @@ public class EventController {
 
     @Operation(summary = "Get Event", description = "Retrieves detailed information about a specific event by its ID.")
     @GetMapping("/api/admin/events/{id}")
+    /**
+     * @description Get flash-sale event detail by ID for admin
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<EventResponse>> getEventAdmin(
             @Parameter(description = "ID of the event to retrieve") @PathVariable String id) {
         log.info("API: Get event by ID (Admin): {}", id);
@@ -54,6 +64,11 @@ public class EventController {
 
     @Operation(summary = "Create Event", description = "Creates a new flash sale event.")
     @PostMapping("/api/admin/events")
+    /**
+     * @description Create a new flash-sale event
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<EventResponse>> createEvent(@Valid @RequestBody EventRequest request) {
         log.info("API: Create event (Admin)");
         Event createdEvent = eventService.createEvent(request);
@@ -62,6 +77,11 @@ public class EventController {
 
     @Operation(summary = "Update Event", description = "Updates an existing flash sale event.")
     @PutMapping("/api/admin/events/{id}")
+    /**
+     * @description Update an existing flash-sale event
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<EventResponse>> updateEvent(
             @Parameter(description = "ID of the event to update") @PathVariable String id,
             @Valid @RequestBody EventRequest request) {
@@ -72,6 +92,11 @@ public class EventController {
 
     @Operation(summary = "Delete Event", description = "Deletes a flash sale event by its ID.")
     @DeleteMapping("/api/admin/events/{id}")
+    /**
+     * @description Delete a flash-sale event by ID
+     * @author Yang-Hsu
+     * @date 2026/7/9
+     */
     public ResponseEntity<ApiResponse<Void>> deleteEvent(
             @Parameter(description = "ID of the event to delete") @PathVariable String id) {
         log.info("API: Delete event (Admin): {}", id);
