@@ -56,7 +56,7 @@ class OrderServiceTest {
     private RabbitTemplate rabbitTemplate;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @Test
     @DisplayName("建立訂單成功 - 庫存足夠")
