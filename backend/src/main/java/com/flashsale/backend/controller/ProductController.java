@@ -6,6 +6,7 @@ import com.flashsale.backend.dto.request.ProductRequest;
 import com.flashsale.backend.dto.response.ProductAdminResponse;
 import com.flashsale.backend.dto.response.ProductClientResponse;
 import com.flashsale.backend.entity.Product;
+import com.flashsale.backend.mapper.ProductMapper;
 import com.flashsale.backend.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
     @Operation(summary = "List Products (Client)", description = "Retrieves a paginated list of available products for clients. This is a public endpoint.")
     @GetMapping("/api/client/open/products")
@@ -45,7 +47,7 @@ public class ProductController {
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Get all products (Client)");
         Page<Product> products = productService.getAllProducts(pageable);
-        Page<ProductClientResponse> response = products.map(this::convertToClientResponse);
+        Page<ProductClientResponse> response = products.map(productMapper::toClientResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
@@ -60,7 +62,7 @@ public class ProductController {
             @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Client): {}", id);
         Product product = productService.getProductById(id);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToClientResponse(product)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, productMapper.toClientResponse(product)));
     }
 
     @Operation(summary = "Get Product (Admin)", description = "Retrieves detailed admin-level information about a specific product. Requires admin privileges.")
@@ -74,7 +76,7 @@ public class ProductController {
             @Parameter(description = "ID of the product to retrieve") @PathVariable String id) {
         log.info("API: Get product by ID (Admin): {}", id);
         Product product = productService.getProductById(id);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(product)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, productMapper.toAdminResponse(product)));
     }
 
     @Operation(summary = "Create Product (Admin)", description = "Creates a new product. Requires admin privileges.")
@@ -87,7 +89,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductAdminResponse>> createProduct(@Valid @RequestBody ProductRequest request) {
         log.info("API: Create product (Admin)");
         Product createdProduct = productService.createProduct(request);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(createdProduct)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, productMapper.toAdminResponse(createdProduct)));
     }
 
     @Operation(summary = "Update Product (Admin)", description = "Updates an existing product. Requires admin privileges.")
@@ -102,7 +104,7 @@ public class ProductController {
             @Valid @RequestBody ProductRequest request) {
         log.info("API: Update product (Admin): {}", productId);
         Product updatedProduct = productService.updateProduct(productId, request);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToAdminResponse(updatedProduct)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, productMapper.toAdminResponse(updatedProduct)));
     }
 
     @Operation(summary = "Delete Product (Admin)", description = "Deletes a product by its ID. Requires admin privileges.")
@@ -131,26 +133,7 @@ public class ProductController {
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: Search products (Admin): {}", productName);
         Page<Product> products = productService.searchProducts(productName, pageable);
-        Page<ProductAdminResponse> response = products.map(this::convertToAdminResponse);
+        Page<ProductAdminResponse> response = products.map(productMapper::toAdminResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
-    }
-
-    private ProductClientResponse convertToClientResponse(Product product) {
-        return ProductClientResponse.builder()
-                .productId(product.getProductId())
-                .productName(product.getProductName())
-                .description(product.getDescription())
-                .build();
-    }
-
-    private ProductAdminResponse convertToAdminResponse(Product product) {
-        return ProductAdminResponse.builder()
-                .productId(product.getProductId())
-                .productName(product.getProductName())
-                .description(product.getDescription())
-                .status(product.getStatus())
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
-                .build();
     }
 }

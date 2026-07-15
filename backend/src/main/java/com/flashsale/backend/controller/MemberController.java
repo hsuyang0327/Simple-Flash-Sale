@@ -6,6 +6,7 @@ import com.flashsale.backend.dto.request.MemberRegistRequest;
 import com.flashsale.backend.dto.request.MemberUpdateRequest;
 import com.flashsale.backend.dto.response.MemberResponse;
 import com.flashsale.backend.entity.Member;
+import com.flashsale.backend.mapper.MemberMapper;
 import com.flashsale.backend.security.SecurityUtils;
 import com.flashsale.backend.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MemberMapper memberMapper;
 
     @Operation(summary = "Register New Member", description = "Allows a new user to register. This is a public endpoint.")
     @PostMapping("/api/client/open/register")
@@ -45,7 +47,7 @@ public class MemberController {
     public ResponseEntity<ApiResponse<MemberResponse>> register(@Valid @RequestBody MemberRegistRequest req) {
         log.info("API: Register member (Client)");
         Member saved = memberService.addMember(req);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(saved)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, memberMapper.toResponse(saved)));
     }
 
     @Operation(summary = "Get Member Profile", description = "Retrieves the profile of the currently authenticated user. Requires JWT authentication.")
@@ -60,7 +62,7 @@ public class MemberController {
         SecurityUtils.checkPermission(memberId);
         log.info("API: Get member profile (Client): {}", memberId);
         Member member = memberService.getMemberById(memberId);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(member)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, memberMapper.toResponse(member)));
     }
 
     @Operation(summary = "Update Member Profile", description = "Updates the profile of the currently authenticated user. Requires JWT authentication.")
@@ -76,7 +78,7 @@ public class MemberController {
         SecurityUtils.checkPermission(memberId);
         log.info("API: Modify member (Client): {}", memberId);
         Member updatedMember = memberService.updateMember(memberId, req);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(updatedMember)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, memberMapper.toResponse(updatedMember)));
     }
 
     @Operation(summary = "List All Members (Admin)", description = "Retrieves a paginated list of all members. Requires admin privileges.")
@@ -90,7 +92,7 @@ public class MemberController {
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "memberId", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: List all members (Admin)");
         Page<Member> memberPage = memberService.getAllMembers(pageable);
-        Page<MemberResponse> responsePage = memberPage.map(this::convertToResponse);
+        Page<MemberResponse> responsePage = memberPage.map(memberMapper::toResponse);
 
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, responsePage));
     }
@@ -107,15 +109,5 @@ public class MemberController {
         log.info("API: Delete member (Admin): {}", id);
         memberService.deleteMember(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
-    }
-
-    private MemberResponse convertToResponse(Member member) {
-        return MemberResponse.builder()
-                .memberId(member.getMemberId())
-                .memberEmail(member.getMemberEmail())
-                .memberName(member.getMemberName())
-                .createdAt(member.getCreatedAt())
-                .updatedAt(member.getUpdatedAt())
-                .build();
     }
 }

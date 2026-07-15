@@ -5,6 +5,7 @@ import com.flashsale.backend.common.ResultCode;
 import com.flashsale.backend.dto.request.EventRequest;
 import com.flashsale.backend.dto.response.EventResponse;
 import com.flashsale.backend.entity.Event;
+import com.flashsale.backend.mapper.EventMapper;
 import com.flashsale.backend.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 public class EventController {
 
     private final EventService eventService;
+    private final EventMapper eventMapper;
 
     @Operation(summary = "List Events", description = "Retrieves a paginated list of events for a specific product.")
     @GetMapping("/api/admin/events")
@@ -44,7 +46,7 @@ public class EventController {
             @Parameter(description = "Pagination information") @PageableDefault(page = 0, size = 10, sort = "startTime", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("API: List events for product (Admin): {}", productId);
         Page<Event> events = eventService.getEventsByProductId(productId, pageable);
-        Page<EventResponse> response = events.map(this::convertToResponse);
+        Page<EventResponse> response = events.map(eventMapper::toResponse);
         return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, response));
     }
 
@@ -59,7 +61,7 @@ public class EventController {
             @Parameter(description = "ID of the event to retrieve") @PathVariable String id) {
         log.info("API: Get event by ID (Admin): {}", id);
         Event event = eventService.getEventById(id);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(event)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, eventMapper.toResponse(event)));
     }
 
     @Operation(summary = "Create Event", description = "Creates a new flash sale event.")
@@ -72,7 +74,7 @@ public class EventController {
     public ResponseEntity<ApiResponse<EventResponse>> createEvent(@Valid @RequestBody EventRequest request) {
         log.info("API: Create event (Admin)");
         Event createdEvent = eventService.createEvent(request);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(createdEvent)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, eventMapper.toResponse(createdEvent)));
     }
 
     @Operation(summary = "Update Event", description = "Updates an existing flash sale event.")
@@ -87,7 +89,7 @@ public class EventController {
             @Valid @RequestBody EventRequest request) {
         log.info("API: Update event (Admin): {}", id);
         Event updatedEvent = eventService.updateEvent(id, request);
-        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, convertToResponse(updatedEvent)));
+        return ResponseEntity.ok(new ApiResponse<>(ResultCode.SUCCESS, eventMapper.toResponse(updatedEvent)));
     }
 
     @Operation(summary = "Delete Event", description = "Deletes a flash sale event by its ID.")
@@ -102,18 +104,5 @@ public class EventController {
         log.info("API: Delete event (Admin): {}", id);
         eventService.deleteEvent(id);
         return ResponseEntity.ok(ApiResponse.of(ResultCode.SUCCESS));
-    }
-
-    private EventResponse convertToResponse(Event event) {
-        return EventResponse.builder()
-                .eventId(event.getEventId())
-                .price(event.getPrice())
-                .stock(event.getStock())
-                .startTime(event.getStartTime())
-                .endTime(event.getEndTime())
-                .status(event.getStatus())
-                .createdAt(event.getCreatedAt())
-                .updatedAt(event.getUpdatedAt())
-                .build();
     }
 }

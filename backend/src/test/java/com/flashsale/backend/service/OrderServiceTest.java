@@ -7,6 +7,7 @@ import com.flashsale.backend.entity.Event;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.entity.Product;
 import com.flashsale.backend.exception.BusinessException;
+import com.flashsale.backend.mapper.OrderMapper;
 import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.OrderRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +55,9 @@ class OrderServiceTest {
 
     @Mock
     private RabbitTemplate rabbitTemplate;
+
+    @Mock
+    private OrderMapper orderMapper;
 
     @InjectMocks
     private OrderServiceImpl orderService;

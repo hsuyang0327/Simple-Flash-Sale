@@ -9,6 +9,7 @@ import com.flashsale.backend.dto.response.OrderStatusResponse;
 import com.flashsale.backend.entity.Event;
 import com.flashsale.backend.entity.Order;
 import com.flashsale.backend.exception.BusinessException;
+import com.flashsale.backend.mapper.OrderMapper;
 import com.flashsale.backend.repository.EventRepository;
 import com.flashsale.backend.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final RedisStockService redisStockService;
     private final RedisOrderService redisOrderService;
     private final RabbitTemplate rabbitTemplate;
+    private final OrderMapper orderMapper;
 
     /**
      * @description Create Order directly to DB — dev/test only, bypasses Redis and MQ.
@@ -257,14 +259,7 @@ public class OrderServiceImpl implements OrderService {
      * @date 2026/7/9
      */
     public OrderClientDetailResponse convertToClientResponse(Order order) {
-        return OrderClientDetailResponse.builder()
-                .orderId(order.getOrderId())
-                .productId(order.getProductId())
-                .quantity(order.getQuantity())
-                .totalPrice(order.getTotalPrice())
-                .status(order.getStatus())
-                .createdAt(order.getCreatedAt())
-                .build();
+        return orderMapper.toClientResponse(order);
     }
 
 }
