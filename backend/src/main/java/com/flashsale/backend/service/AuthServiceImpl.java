@@ -10,6 +10,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
     private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
 
 
     /**
@@ -39,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
             return new BusinessException(ResultCode.MEMBER_NOT_FOUND);
         });
 
-        if (!member.getMemberPwd().equals(memberPwd)) {
+        if (!passwordEncoder.matches(memberPwd, member.getMemberPwd())) {
             log.warn("Login failed: Password mismatch for user {}", memberEmail);
             throw new BusinessException(ResultCode.LOGIN_FAILED);
         }

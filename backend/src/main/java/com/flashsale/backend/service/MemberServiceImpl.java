@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * @description Register a new member
@@ -42,6 +44,7 @@ public class MemberServiceImpl implements MemberService {
         }
         Member member = new Member();
         BeanUtils.copyProperties(req, member);
+        member.setMemberPwd(passwordEncoder.encode(req.getMemberPwd()));
         Member savedMember = memberRepository.save(member);
         log.info("Member created successfully with ID: {}", savedMember.getMemberId());
         return savedMember;
@@ -72,6 +75,9 @@ public class MemberServiceImpl implements MemberService {
         try {
             Member existingMember = this.getMemberById(memberId);
             BeanUtils.copyProperties(req, existingMember, BeanCopyUtil.getNullPropertyNames(req));
+            if (req.getMemberPwd() != null) {
+                existingMember.setMemberPwd(passwordEncoder.encode(req.getMemberPwd()));
+            }
             Member updatedMember = memberRepository.save(existingMember);
             log.info("Member updated successfully: {}", memberId);
             return updatedMember;
