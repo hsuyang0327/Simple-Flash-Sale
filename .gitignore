@@ -1,5 +1,5 @@
-# --- GitHub Copilot dev artifacts (local-only, not for GitHub) ---
-.github/
+# --- Claude Code dev artifacts (local-only, not for GitHub) ---
+.claude/
 
 # --- Docker & Data (你最關心的部分) ---
 mysql_data/
