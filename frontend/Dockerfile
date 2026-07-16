@@ -23,6 +23,10 @@ COPY . .
 ARG BACKEND_URL=http://flash-sale-backend:8080
 ENV BACKEND_URL=$BACKEND_URL
 
+# Ensure a public/ dir exists even if the repo doesn't ship one,
+# so the runner stage's COPY --from=builder below never fails on a missing path.
+RUN mkdir -p ./public
+
 RUN npm run build
 
 # ────────────────────────────────────────────────
