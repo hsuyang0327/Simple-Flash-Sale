@@ -28,6 +28,44 @@
 
 ---
 
+## 🚀 快速啟動 (Getting Started)
+
+### 前置準備
+1. 安裝 [Docker](https://www.docker.com/) 與 Docker Compose。
+2. 複製環境變數範本並填入實際值：
+   ```bash
+   cp .env.example .env
+   # 編輯 .env，設定 DB_PASSWORD / RABBITMQ_PASSWORD / JWT_SECRET
+   ```
+
+### Step 1：啟動基礎設施 (MySQL / Redis / RabbitMQ)
+此指令會建立後續前後端服務共用的 Docker network，須先執行：
+```bash
+docker compose up -d
+```
+
+### Step 2：啟動前後端服務
+待基礎設施就緒後，建置並啟動 Spring Boot 後端與 Next.js 前端：
+```bash
+docker compose -f docker-compose.app.yml up --build -d
+```
+
+### 服務位置
+| 服務 | 位址 |
+| --- | --- |
+| 前台網站 | http://localhost:3000 |
+| 後端 API | http://localhost:8080 |
+| Swagger UI | http://localhost:8080/swagger-ui/index.html |
+| RabbitMQ 管理介面 | http://localhost:15672 |
+
+> 📸 **待補充截圖**
+> - [ ] 首頁 / 活動列表頁
+> - [ ] 搶購下單流程（下單 → 輪詢訂單狀態 → 成功/售罄畫面）
+> - [ ] 後台管理頁面（Dashboard、商品管理、訂單管理、排程 Job 管理）
+> - [ ] Swagger UI 總覽畫面
+
+---
+
 ## 🏗 技術棧 (Tech Stack)
 
 ### Frontend
