@@ -7,6 +7,10 @@ redis_data/
 *.rdb
 *.log
 
+# --- Secrets ---
+.env
+backend/.env
+
 # --- Mac 系統檔案 ---
 .DS_Store
 .AppleDouble

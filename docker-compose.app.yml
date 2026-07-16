@@ -12,13 +12,14 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://flash-sale-mysql:3306/flash_sale?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_DATA_REDIS_HOST: flash-sale-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_RABBITMQ_HOST: flash-sale-rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: password
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     networks:
       - infra-net
 
