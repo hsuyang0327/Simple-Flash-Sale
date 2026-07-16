@@ -58,12 +58,6 @@ docker compose -f docker-compose.app.yml up --build -d
 | Swagger UI | http://localhost:8080/swagger-ui/index.html |
 | RabbitMQ 管理介面 | http://localhost:15672 |
 
-> 📸 **待補充截圖**
-> - [ ] 首頁 / 活動列表頁
-> - [ ] 搶購下單流程（下單 → 輪詢訂單狀態 → 成功/售罄畫面）
-> - [ ] 後台管理頁面（Dashboard、商品管理、訂單管理、排程 Job 管理）
-> - [ ] Swagger UI 總覽畫面
-
 ---
 
 ## 🏗 技術棧 (Tech Stack)
