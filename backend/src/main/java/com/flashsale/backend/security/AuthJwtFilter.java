@@ -52,7 +52,7 @@ public class AuthJwtFilter extends OncePerRequestFilter {
                 path.equals("/api/client/auth/logout") ||
                 path.startsWith("/api/client/open/") ||
                 path.startsWith("/api/admin/") ||
-                path.startsWith("/api/test/") || // TODO: dev/test only — remove or restrict to dev profile before deploying to production
+                path.startsWith("/api/test/") || // no-op outside dev/test: TestController is only registered as a bean under the dev/test profile (see @Profile on TestController)
                 path.startsWith("/swagger-ui/") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-resources")) {
